@@ -16,8 +16,8 @@
 
 ;;; =============================================================
 (defgeneric initialize-unmarshalled-instance (object)
-     "Called as the last step of the deserialization of an object. 
-!Must return the object!!"
+  (:documentation  "Called as the last step of the deserialization of an object. 
+!Must return the object!!")
  )
 
 (defmethod initialize-unmarshalled-instance (object)
@@ -28,7 +28,8 @@
 
 ;;; =============================================================
 (defgeneric unmarshal (thing)
-  "Returns an object when called with a wellformed marshal sexp.")
+  (:documentation "Returns an object when called with a wellformed marshal sexp.")
+)
 
 
 (defmethod unmarshal (thing)
@@ -133,6 +134,7 @@
 ;;;  04.01.99 cjo: weswegen ein neues coding-idom eingefuehrt wurde, um alte array "richtig" 
 ;;;                einlesen zu koennen.
 ;;;  18.08.98 cjo: encode von array wurde umgedreht
+;;;  10.11.11 mw: removed the old (wrong) array method
 (defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no))) 
                       (type (eql (coding-idiom :array))) token &optional (circle-hash NIL))
    (let ((out (make-array (third token) :element-type (fourth token)))
