@@ -91,7 +91,7 @@ Some numbers, string, lists and object references."))
 
 
 (defmethod set-up ((self basetest))
-  (setf (ship1 self) (make-instance 'ship :name "Arc" :course 360 :dimensions '(:width 30 :length 90)))
+  (setf (ship1 self) (make-instance 'ship :name "Ark" :course 360 :dimensions '(:width 30 :length 90)))
   (setf (ship2 self) (make-instance 'sailingship :name "Pinta" :course 270 :cruise 9 
 				   :dimensions '(:width 7 :length 21) :sailarea 400))
   (setf (ship3 self) (make-instance 'motorship :name "Titanic" :course 320 :cruise 21 

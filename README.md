@@ -59,11 +59,11 @@ Definition of a class
       Some numbers, string, lists and object references."))
 
 
-    (defparameter arc (make-instance 'ship :name "Arc" :course 360 
+    (defparameter ark (make-instance 'ship :name "Ark" :course 360 
                                 :dimensions '(:width 30 :length 90)))
 Let's try to serialize this:
 
-    $ (ms:marshal arc)
+    $ (ms:marshal ark)
     --> (:PCODE 1 NIL)
 
 Actually nothing happens.
@@ -77,12 +77,12 @@ in the package `:marshal`.
 
 Note that the slot `cruise` is not listed. Therefore it will not be serialized.
 
-    $ (ms:marshal arc)
+    $ (ms:marshal ark)
     -->  (:PCODE 1
-                (:OBJECT 1 SHIP (:SIMPLE-STRING 2 "Arc") (:LIST 3 :WIDTH 30 :LENGTH 90) 360
+                (:OBJECT 1 SHIP (:SIMPLE-STRING 2 "Ark") (:LIST 3 :WIDTH 30 :LENGTH 90) 360
 	            (:LIST 4)))
 
-Fine. Try a `(ms:unmarshal (ms:marshal arc))` and you will get a clone of the object arc.
+Fine. Try a `(ms:unmarshal (ms:marshal ark))` and you will get a clone of the object ark.
 
 
 Let's define some subclasses (yes, it's Lisp, we use multiple inheritance here).
@@ -187,7 +187,7 @@ marshalling. The default vocabulary is quite verbose. In case you are
 going to send the objects through a network, you may want to change
 that to a shorter set of verbs. Well, I think there are betters way
 to speed that up, e.g. by adding a nginx proxy with automaic gzip
-compression in front of your webserver. Anyway, you will find an
+compression in front of your lisp webserver. Anyway, you will find an
 alternative, shorter implementation of `coding-idiom`, it is fairly 
 straight-forward.
 
@@ -209,7 +209,7 @@ the file "marshal.asd" directly. After that a `(asdf:load-system "marshal")`
 should be sufficient.
 
 Or, as a kind of worst case, you simply do a direct `(load
-<file>)` of the files `package.lisp`, `coding-idiom.lisp`, `marshal.lisp,
+<file>)` of the files `package.lisp`, `coding-idiom.lisp`, `marshal.lisp`,
 and `unmarshal.lisp`.
 
 
@@ -226,7 +226,7 @@ Testing
 Tested with SBCL and CCL. No rocket science required, should run in 
 any environment. 
 
-A set of unit tests is encluded in tests.lisp.
+A set of unit tests is included in tests.lisp.
 
 
 Reporting problems
