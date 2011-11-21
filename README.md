@@ -1,6 +1,5 @@
 cl-marshal
 ==========
-
 Simple and fast marshalling of Lisp datastructures.
 Convert any object into a string representation, put 
 it on a stream an revive it from there.
@@ -10,7 +9,6 @@ to add 1 method per baseclass.
 
 License
 -------
-
 MIT License. See included LICENSE file.
 
 Usage
@@ -25,7 +23,7 @@ Otherwise do a load *.lisp/tests-.lisp.
 
 Serialization of simple examples:
 
-    $ (ms:marshal '(1 2 3 "Foo" "Bar" (make-array (3) :initial-contents '(a b c))))
+    $ (ms:marshal (list 1 2 3 "Foo" "Bar" (make-array '(3) :initial-contents '(a b c))))
     --> (:PCODE 1
               (:LIST 1 2 3 (:SIMPLE-STRING 2 "Foo") (:SIMPLE-STRING 3 "Bar")
               (:ARRAY 4 (3) T (A B C))))		
