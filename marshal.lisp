@@ -56,7 +56,6 @@ need to be pairs of slot and accessors."
 (defgeneric marshal (thing &optional circle-hash)
   (:documentation "Generates an sexp when called with an object. The sexp can be used 
 to send it over a ntowrk or to store it in a database etc.")
-  (declare (ignore circle hash))
   )
 
 

@@ -199,4 +199,6 @@
         :adjustable (nth 3 token)
         :fill-pointer (nth 2 token))))
 
+;;; =============================================================
 
+(pushnew :marshal *features*)
