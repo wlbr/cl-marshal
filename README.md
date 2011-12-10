@@ -192,7 +192,22 @@ straight-forward.
 
 Installation
 ------------
-Get the code with:
+
+The most simple and recommended way to install cl-marshal is by using 
+[Quicklisp](http://www.quicklisp.org). If you installed Quicklisp a simple
+   
+    (ql:quickload :marshal)
+	
+will download the package and acually load it. You only need to do
+this once per machine. Later a 
+
+    (require :marshal) 
+
+will be enough.
+
+
+
+Alternatively you may get the code with:
 
     git clone git://github.com/wlbr/cl-marshal.git
 
@@ -210,8 +225,6 @@ Or, as a kind of worst case, you simply do a direct `(load
 <file>)` of the files `package.lisp`, `coding-idiom.lisp`, `marshal.lisp`,
 and `unmarshal.lisp`.
 
-
-Hopefully it will be added to Quicklisp.
 
 Dependencies
 ---------------
