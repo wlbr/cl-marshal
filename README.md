@@ -7,6 +7,9 @@ Only minimal changes required to make
 your CLOS objects serializable. Actually you only need 
 to add 1 method per baseclass.
 
+Just to make that clear: project is not dead - the 
+functionality is simply finished and working.
+
 License
 -------
 MIT License. See included LICENSE file.
