@@ -178,8 +178,7 @@ a net work connections. Or simply diffenrent classes as time passes
 between the persistant storage of a serialization and its retrieval.
 It is important to understand that the classes that are serialized and
 the one of the object that will be deserialized need to have the same
-name and need to have the same slotnames as listed in  
-`ms:class-persistant-slots`.
+name and need to have the same slotnames as listed in `ms:class-persistant-slots`.
 
 If you define a method `ms:initialize-unmarshalled-instance` for your
 class, then this method will be called in the end of the
