@@ -1,10 +1,10 @@
 cl-marshal
 ==========
 Simple and fast marshalling of Lisp datastructures.
-Convert any object into a string representation, put 
+Convert any object into a string representation, put
 it on a stream an revive it from there.
-Only minimal changes required to make 
-your CLOS objects serializable. Actually you only need 
+Only minimal changes required to make
+your CLOS objects serializable. Actually you only need
 to add 1 method per baseclass.
 
 License
@@ -25,17 +25,17 @@ Serialization of simple examples:
 
     $ (ms:marshal (list 1 2 3 "Foo" "Bar" (make-array '(3) :initial-contents '(a b c))))
     --> (:PCODE 1
-              (:LIST 1 2 3 (:SIMPLE-STRING 2 "Foo") (:SIMPLE-STRING 3 "Bar")
-              (:ARRAY 4 (3) T (A B C))))		
+              (:LIST 1 1 2 3 (:SIMPLE-STRING 2 "Foo") (:SIMPLE-STRING 3 "Bar")
+              (:ARRAY 4 (3) T (A B C))))
 
 Deserialization:
 
     $ (ms:unmarshal '(:PCODE 1
-          (:LIST 1 2 3 (:SIMPLE-STRING 2 "Foo") (:SIMPLE-STRING 3 "Bar")
+          (:LIST 1 1 2 3 (:SIMPLE-STRING 2 "Foo") (:SIMPLE-STRING 3 "Bar")
           (:ARRAY 4 (3) T (A B C)))))
-    --> (2 3 "Foo" "Bar" #(A B C))
+    --> (1 2 3 "Foo" "Bar" #(A B C))
 
-That means that a 
+That means that a
 
     (ms:unmarshal (ms:marshal myobject))
 
@@ -47,17 +47,17 @@ returns a deep clone of myobject.
 ###Advanced Usage
 Definition of a class
 
-     (defclass ship () 
+     (defclass ship ()
        ((name :initform "" :initarg :name :accessor name)
         (dimensions :initform '(:width 0 :length 0) :initarg :dimensions :accessor dimensions)
         (course :initform 0 :initarg :course :accessor course)
         (cruise :initform 0 :initarg :cruise :accessor cruise) ; shall be transient
         (dinghy :initform NIL :initarg :dinghy :accessor dinghy :initarg :dinghy)) ; another ship -> ref
-       (:documentation "A democlass. Some 'persistant slots', one transient. 
+       (:documentation "A democlass. Some 'persistant slots', one transient.
       Some numbers, string, lists and object references."))
 
 
-    (defparameter ark (make-instance 'ship :name "Ark" :course 360 
+    (defparameter ark (make-instance 'ship :name "Ark" :course 360
                                 :dimensions '(:width 30 :length 90)))
 Let's try to serialize this:
 
@@ -66,7 +66,7 @@ Let's try to serialize this:
 
 Actually nothing happens.
 
-Next we define the method `class-persistant-slots` for this class. The method hast to be defined 
+Next we define the method `class-persistant-slots` for this class. The method hast to be defined
 in the package `:marshal`.
 
     (defmethod ms:class-persistant-slots ((self ship))
@@ -95,19 +95,19 @@ Let's define some subclasses (yes, it's Lisp, we use multiple inheritance here).
 
     (defclass motorsailor (motorship sailingship)
       ()
-    ) 
-	
+    )
+
 Some instances:
-    
-     (defparameter ship2 (make-instance 'sailingship :name "Pinta" :course 270 :cruise 9 
+
+     (defparameter ship2 (make-instance 'sailingship :name "Pinta" :course 270 :cruise 9
 				   :dimensions '(:width 7 :length 21) :sailarea 400))
-     (defparameter ship3 self) (make-instance 'motorship :name "Titanic" :course 320 :cruise 21 
+     (defparameter ship3 self) (make-instance 'motorship :name "Titanic" :course 320 :cruise 21
 				   :dimensions '(:width 28 :length 269) :enginepower 51000))
      (defparameter ship4 (make-instance 'motorsailor  :name "Krusenstern" :course 180
-				   :cruise 17.4 :dimensions '(:width 12 :length 82) 
+				   :cruise 17.4 :dimensions '(:width 12 :length 82)
 				   :sailarea 3400 :enginepower 2000))
-   
-Let's try 
+
+Let's try
 
     $ (ms:marshal ship4)
     --> (:PCODE 1
@@ -122,12 +122,12 @@ another ship. That's a circular reference.
 
     (defclass dinghy (ship)
       ((aboard :initform NIL :initarg :aboard :accessor aboard)) ; another ship -> circular ref
-    ) 
-	
-    (defparameter ship5 (make-instance 'dinghy :name "Gig" :course 320 :cruise 5 
+    )
+
+    (defparameter ship5 (make-instance 'dinghy :name "Gig" :course 320 :cruise 5
 				:dimensions '(:width 2 :length 6) :aboard ship4))
     (setf (dinghy ship4) ship5)
-	
+
 	$ (marshall ship4)
 	--> (:PCODE 1
                (:OBJECT 1 MOTORSAILOR (:SIMPLE-STRING 2 "Krusenstern")
@@ -147,11 +147,11 @@ backreference. Simply, because so far the back link `aboard` is still transient.
                  (:LIST 3 :WIDTH 12 :LENGTH 82) 180
                  (:OBJECT 4 DINGHY (:SIMPLE-STRING 5 "Gig") (:LIST 6 :WIDTH 2 :LENGTH 6)
                     320 (:LIST 7) (:REFERENCE 1))))
-	  
-Brilliant! 
+
+Brilliant!
 References, circles et. are working regardless these are references from
 and to list, objects, hashtables, array etc.
-	
+
 
 Understanding the Implementation
 --------------------------------
@@ -186,22 +186,22 @@ going to send the objects through a network, you may want to change
 that to a shorter set of verbs. Well, I think there are betters way
 to speed that up, e.g. by adding a nginx proxy with automaic gzip
 compression in front of your lisp webserver. Anyway, you will find an
-alternative, shorter implementation of `coding-idiom`, it is fairly 
+alternative, shorter implementation of `coding-idiom`, it is fairly
 straight-forward.
 
 
 Installation
 ------------
 
-The most simple and recommended way to install cl-marshal is by using 
+The most simple and recommended way to install cl-marshal is by using
 [Quicklisp](http://www.quicklisp.org). If you installed Quicklisp a simple
-   
-    (ql:quickload :marshal)
-	
-will download the package and acually load it. You only need to do
-this once per machine. Later a 
 
-    (require :marshal) 
+    (ql:quickload :marshal)
+
+will download the package and acually load it. You only need to do
+this once per machine. Later a
+
+    (require :marshal)
 
 will be enough.
 
@@ -218,7 +218,7 @@ Or, you may put the source in a subdirectory of your project and add
 the file `marshal.asd` wih its full path to your own asdf definition.
 
 Or, you may put the source in a subdirectory of your project and load
-the file "marshal.asd" directly. After that a `(asdf:load-system "marshal")` 
+the file "marshal.asd" directly. After that a `(asdf:load-system "marshal")`
 should be sufficient.
 
 Or, as a kind of worst case, you simply do a direct `(load
@@ -234,8 +234,8 @@ xlunit for the unit tests only (the tests are not included in the asdf system).
 
 Testing
 ----------
-Tested with SBCL and CCL. No rocket science required, should run in 
-any environment. 
+Tested with SBCL and CCL. No rocket science required, should run in
+any environment.
 
 A set of unit tests is included in tests.lisp.
 
@@ -246,7 +246,7 @@ If you run into any trouble or find bugs, please report them via [the Github iss
 
 History
 -------
-First written as encode/decode for CLOS objects only during a diploma 
+First written as encode/decode for CLOS objects only during a diploma
 thesis in '95. Major rework/enhancements during a research project
 in the end of the '90s. Refactoring in 2011 when revisiting Lisp.
 
