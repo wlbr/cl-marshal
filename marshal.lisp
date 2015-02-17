@@ -163,7 +163,7 @@ to send it over a ntowrk or to store it in a database etc.")
                (adjustable-array-p (adjustable-array-p object)))
             (setq ckey (genkey circle-hash))
             (setvalue circle-hash object ckey) 
-            (setf (fill-pointer object) 0); was: NIL
+            (setf (fill-pointer object) (array-dimension object 0)) ; was 0, was: NIL
             (setq output (list (coding-idiom :string) ckey
                            fill-pointer
                            adjustable-array-p
