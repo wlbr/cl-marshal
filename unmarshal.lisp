@@ -5,9 +5,9 @@
 ;;;
 ;;; Project: marshal
 ;;; Simple (de)serialization of Lisp datastructures.
-;;; 
+;;;
 ;;; File: marshal.lisp
-;;; 
+;;;
 ;;; ***********************************************************
 
 
@@ -16,12 +16,12 @@
 
 ;;; =============================================================
 (defgeneric initialize-unmarshalled-instance (object)
-  (:documentation  "Called as the last step of the deserialization of an object. 
+  (:documentation  "Called as the last step of the deserialization of an object.
 !Must return the object!!")
  )
 
 (defmethod initialize-unmarshalled-instance (object)
-   "Called as the last step of the deserialization of an object. 
+   "Called as the last step of the deserialization of an object.
 !Must return the object!!"
    object)
 
@@ -41,25 +41,25 @@
          thing)
       thing)
    )
-   
+
 
 
 (defgeneric unmarshal-fn (version type token &optional circle-hash)
   )
 
 
-(defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no))) 
+(defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no)))
                       type token &optional (circle-hash NIL))
    (declare (ignore type circle-hash))
    token)
 
 
 
-(defmethod unmarshal-fn :around ((version (eql (coding-idiom :coding-release-no))) 
+(defmethod unmarshal-fn :around ((version (eql (coding-idiom :coding-release-no)))
                               type token &optional (circle-hash NIL))
    (let ((result NIL))
-     (if circle-hash 
-        (progn 
+     (if circle-hash
+        (progn
           (setq result (call-next-method version type token circle-hash))
           (if (listp token)
              (setf (gethash (second token) circle-hash) result)
@@ -73,22 +73,22 @@
 
 
 
-(defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no))) 
+(defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no)))
                       (type (eql (coding-idiom :reference))) token &optional (circle-hash NIL))
    (gethash (second token) circle-hash)
-   )  
+   )
 
 
 
 ;;;  07.07.98 cjo: LOOP
-(defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no))) 
+(defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no)))
                       (type (eql (coding-idiom :object))) token &optional (circle-hash NIL))
    (let* ((out (make-instance (third token)))
           (slots (class-persistant-slots out))
           (values (cdddr token)))
 
       (setf (gethash (second token) circle-hash) out)
-       
+
       (LOOP
         FOR slot IN slots
         FOR value IN values
@@ -96,13 +96,13 @@
               (setf (slot-value out slot) (unmarshal-fn version (first value) value circle-hash))
               (setf (slot-value out slot) (unmarshal-fn version T value circle-hash))))
       (initialize-unmarshalled-instance out)))
-      
-      
+
+
 
 ;;;  07.07.98 cjo: LOOP (Faktor 3 schneller :)
 ;;; 12.02.99 cjo: aufgespalten wegen dotted lists
-(defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no))) 
-                      (type (eql (coding-idiom :list))) token 
+(defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no)))
+                      (type (eql (coding-idiom :list))) token
                       &optional (circle-hash NIL))
    (let ((out NIL))
       (setf (gethash (second token) circle-hash) out)
@@ -111,38 +111,33 @@
                     (unmarshal-fn version (first walker) walker circle-hash)
                     (unmarshal-fn version T walker circle-hash)))))
 
-(defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no))) 
-                      (type (eql (coding-idiom :dlist))) token 
+(defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no)))
+                      (type (eql (coding-idiom :dlist))) token
                       &optional (circle-hash NIL))
    (let ((out NIL))
-      (setf (gethash (second token) circle-hash) out)
-      (let* ((rest-liste (cddr token))
-             (liste NIL))
-         (flet ((unmarshal-it (item)
-                 (if (listp item)
+     (setf (gethash (second token) circle-hash) out)
+     (let* ((rest-liste (cddr token))
+	    (liste NIL))
+       (flet ((unmarshal-it (item)
+		(if (listp item)
                     (unmarshal-fn version (first item) item circle-hash)
                     (unmarshal-fn version T item circle-hash))))
-           (LOOP FOR walker IN (rest rest-liste)
-             DO (push (unmarshal-it walker) liste))
-           (setq liste (nreverse liste))
-           (setf (rest (last liste)) (unmarshal-it (first rest-liste)))
-           liste))))
+	 (cons (unmarshal-it (first rest-liste))
+	       (first (loop for walker in (rest rest-liste)
+			 collect (unmarshal-it walker))))))))
 
-
-
-
-;;;  04.01.99 cjo: weswegen ein neues coding-idom eingefuehrt wurde, um alte array "richtig" 
+;;;  04.01.99 cjo: weswegen ein neues coding-idom eingefuehrt wurde, um alte array "richtig"
 ;;;                einlesen zu koennen.
 ;;;  18.08.98 cjo: encode von array wurde umgedreht
 ;;;  10.11.11 mw: removed the old (wrong) array method
-(defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no))) 
+(defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no)))
                       (type (eql (coding-idiom :array))) token &optional (circle-hash NIL))
    (let ((out (make-array (third token) :element-type (fourth token)))
          (elements (fifth token)))
-      
+
       (setf (gethash (second token) circle-hash) out)
-      
-      (LOOP 
+
+      (LOOP
         FOR walker IN elements
         FOR e FROM 0 TO (1- (length elements))
         DO (if (listp walker)
@@ -153,18 +148,18 @@
 
 ;;;  15.01.99 cjo: make-hash-table abgeaendert
 ;;;  07.07.98 cjo: LOOP
-(defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no))) 
+(defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no)))
                       (type (eql (coding-idiom :hash-table))) token &optional (circle-hash NIL))
    (let* ((hash-function (seventh token))
-          (out (if hash-function 
-                  (make-hash-table :size (third token) :rehash-size (fourth token) 
+          (out (if hash-function
+                  (make-hash-table :size (third token) :rehash-size (fourth token)
                     :rehash-threshold (fifth token) :test (sixth token) :hash-function hash-function)
-                  (make-hash-table :size (third token) :rehash-size (fourth token) 
+                  (make-hash-table :size (third token) :rehash-size (fourth token)
                     :rehash-threshold (fifth token) :test (sixth token))))
          (elements (eighth token)))
 
-      (setf (gethash (second token) circle-hash) out)            
-      (LOOP 
+      (setf (gethash (second token) circle-hash) out)
+      (LOOP
         FOR key IN elements BY #'cddr
         FOR value IN (rest elements) BY #'cddr
         DO (if (listp key)
@@ -179,8 +174,8 @@
 
 
 ;;;  04.01.99 cjo: simple-strings
-(defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no))) 
-                      (type (eql (coding-idiom :simple-string))) token 
+(defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no)))
+                      (type (eql (coding-idiom :simple-string))) token
                       &optional (circle-hash NIL))
    (declare (ignore circle-hash))
    (third token))
@@ -188,8 +183,8 @@
 ; (unmarshal (marshal "huhu"))
 
 ;;;  04.01.99 cjo: strings
-(defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no))) 
-                      (type (eql (coding-idiom :string))) token 
+(defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no)))
+                      (type (eql (coding-idiom :string))) token
                       &optional (circle-hash NIL))
    (declare (ignore circle-hash))
    (let ((string (nth 4 token)))
