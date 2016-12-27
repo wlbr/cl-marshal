@@ -200,6 +200,12 @@ Some numbers, string, lists and object references."))
     (assert-equal (caar (second umdl)) 5)
     (assert-true (equalp dl umdl))))
 
+(def-test-method dotlisttest-2 ((self typestest) :run nil)
+  (let* ((dl (cons 1 (cons 2 3)))
+         (umdl (unmarshal (marshal dl))))
+    (assert-equal (cddr umdl) 3)
+    (assert-equal (cadr umdl) 2)))
+
 (progn
   (print "Testcase Objecttest")
   (textui-test-run (get-suite objecttest))
