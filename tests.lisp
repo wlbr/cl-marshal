@@ -4,13 +4,13 @@
 ;;;
 ;;; Project: marshal
 ;;; Simple (de)serialization of Lisp datastructures.
-;;; 
+;;;
 ;;; File: tests.lisp
 ;;;
 ;;; Provides a decent test suite.
 ;;; Not included in asdf system definition.
 ;;; Requires unit test suite xpunit (available via quicklisp e.g.)
-;;; 
+;;;
 ;;; ***********************************************************
 
 
@@ -26,19 +26,19 @@
 
 ;;; ***********************************************************
 ;; definition of test classes
-(defclass ship () 
+(defclass ship ()
   ((name :initform "" :initarg :name :accessor name)
    (dimensions :initform '(:width 0 :length 0) :initarg :dimensions :accessor dimensions)
    (course :initform 0 :initarg :course :accessor course)
    (cruise :initform 0 :initarg :cruise :accessor cruise) ; shall be transient
    (dinghy :initform NIL :initarg :dinghy :accessor dinghy :initarg :dinghy)) ; another ship -> ref
-  (:documentation "A democlass. Some 'persistant slots', one transient. 
+  (:documentation "A democlass. Some 'persistant slots', one transient.
 Some numbers, string, lists and object references."))
- 
+
 (defgeneric ttostring (ship))
 
 (defmethod ttostring ((self ship))
-  (format nil "Vessel: ~a~%Fitting ~a degrees at ~a knots~%  Length: ~a m~%  Width: ~a m" 
+  (format nil "Vessel: ~a~%Fitting ~a degrees at ~a knots~%  Length: ~a m~%  Width: ~a m"
 	   (name self) (course self) (cruise self)
 	   (getf (dimensions self):length)
 	   (getf (dimensions self):width)))
@@ -66,11 +66,11 @@ Some numbers, string, lists and object references."))
 
 (defclass motorsailor (motorship sailingship)
   ()
-) 
+)
 
 (defclass dinghy (ship)
   ((aboard :initform NIL :initarg :aboard :accessor aboard)) ; another ship -> circular ref
-) 
+)
 
 (defmethod ms:class-persistant-slots ((self dinghy))
   (append (call-next-method) '(aboard)))
@@ -86,24 +86,24 @@ Some numbers, string, lists and object references."))
     (ship4 :accessor ship4 :initarg :ship4)
     (ship5 :accessor ship5 :initarg :ship5)
     (ship6 :accessor ship6 :initarg :ship6)
-    (ships :accessor ships :initarg :ships)) 
+    (ships :accessor ships :initarg :ships))
  )
 
 
 (defmethod set-up ((self basetest))
   (setf (ship1 self) (make-instance 'ship :name "Ark" :course 360 :dimensions '(:width 30 :length 90)))
-  (setf (ship2 self) (make-instance 'sailingship :name "Pinta" :course 270 :cruise 9 
+  (setf (ship2 self) (make-instance 'sailingship :name "Pinta" :course 270 :cruise 9
 				   :dimensions '(:width 7 :length 21) :sailarea 400))
-  (setf (ship3 self) (make-instance 'motorship :name "Titanic" :course 320 :cruise 21 
+  (setf (ship3 self) (make-instance 'motorship :name "Titanic" :course 320 :cruise 21
 				   :dimensions '(:width 28 :length 269) :enginepower 51000))
   (setf (ship4 self) (make-instance 'motorsailor  :name "Gorch Fock" :course 180
-				   :cruise 18 :dimensions '(:width 12 :length 82) 
+				   :cruise 18 :dimensions '(:width 12 :length 82)
 				   :sailarea 2037 :enginepower 1660))
-  (setf (ship5 self) (make-instance 'dinghy :name "Gig" :course 320 :cruise 5 
+  (setf (ship5 self) (make-instance 'dinghy :name "Gig" :course 320 :cruise 5
 				:dimensions '(:width 2 :length 6)))
-  (setf (ship6 self) (make-instance 'dinghy :name "Gig" :course 320 :cruise 5 
+  (setf (ship6 self) (make-instance 'dinghy :name "Gig" :course 320 :cruise 5
 				:dimensions '(:width 2 :length 6) :aboard (ship4 self)))
-  
+
   (setf (dinghy (ship3 self)) (ship5 self))  ; ref only
   (setf (dinghy (ship4 self)) (ship6 self))  ; -> circle
   (setf (ships self) (list (ship1 self) (ship2 self) (ship4 self) (ship6 self)))
@@ -128,7 +128,7 @@ Some numbers, string, lists and object references."))
 
 (def-test-method test-objectcircle ((self objecttest) :run nil)
   (let ((uma (unmarshal (marshal (ship4 self)))))
-    (assert-eql uma 
+    (assert-eql uma
 	       (aboard (dinghy uma)))
   ))
 
@@ -188,13 +188,23 @@ Some numbers, string, lists and object references."))
     (setf (gethash 4 ht) (ship4 self))
     (setf (gethash 5 ht) (ship5 self))
     (setf (gethash 6 ht) (ship6 self))
-   
+
     (assert-eql (dinghy (gethash 4 ht)) (gethash 6 ht))
     (assert-eql (gethash 4 ht) (aboard (gethash 6 ht)))
-    (assert-not-eql ht umht)
-    ))
+    (assert-not-eql ht umht)))
 
+(def-test-method dotlisttest ((self typestest) :run nil)
+  (let* ((dl '((3 #(1 2) . 4) ((5 . #(1 2)))))
+         (umdl (unmarshal (marshal dl))))
+    (assert-equal (cddr (first umdl)) 4)
+    (assert-equal (caar (second umdl)) 5)
+    (assert-true (equalp dl umdl))))
 
+(def-test-method dotlisttest-2 ((self typestest) :run nil)
+  (let* ((dl (cons 1 (cons 2 3)))
+         (umdl (unmarshal (marshal dl))))
+    (assert-equal (cddr umdl) 3)
+    (assert-equal (cadr umdl) 2)))
 
 (progn
   (print "Testcase Objecttest")
