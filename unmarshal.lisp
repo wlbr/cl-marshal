@@ -83,7 +83,7 @@
 ;;;  07.07.98 cjo: LOOP
 (defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no)))
                          (type (eql (coding-idiom :object))) token &optional (circle-hash NIL))
-  (let* ((out (make-instance (third token)))
+  (let* ((out (allocate-instance (find-class (third token))))
          (slots (class-persistant-slots out))
          (values (cdddr token)))
     
