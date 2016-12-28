@@ -15,21 +15,21 @@
 
 
 (defmacro coding-idiom (key)
-   "Definition of the vocabulary of the generated serialization. You can 
-increase verbosity or compactness by choosing your own 'language'"
-   ;;; key= access code used inside the programs source code
-   ;;; value= generated identifier.
-   (getf '(:array :array
-           :hash-table :hash-table
-           :coding-identifier :pcode
-           :list :list
-           :dlist :dlist
-           :object :object
-           :string :string
-           :simple-string :simple-string
-           :reference :reference
-           :coding-release-no 1)
-     key))
+  "Definition of the vocabulary of the generated serialization. You can 
+  increase verbosity or compactness by choosing your own 'language'"
+  ;;; key= access code used inside the programs source code
+  ;;; value= generated identifier.
+  (getf '(:array :array
+                 :hash-table :hash-table
+                 :coding-identifier :pcode
+                 :list :list
+                 :dlist :dlist
+                 :object :object
+                 :string :string
+                 :simple-string :simple-string
+                 :reference :reference
+                 :coding-release-no 1)
+        key))
 
 
 ;(defmacro coding-idiom (key)

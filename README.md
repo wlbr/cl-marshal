@@ -131,7 +131,7 @@ another ship. That's a circular reference.
 				:dimensions '(:width 2 :length 6) :aboard ship4))
     (setf (dinghy ship4) ship5)
 
-	$ (marshall ship4)
+	$ (ms:marshal ship4)
 	--> (:PCODE 1
                (:OBJECT 1 MOTORSAILOR (:SIMPLE-STRING 2 "Krusenstern")
                   (:LIST 3 :WIDTH 12 :LENGTH 82) 180
@@ -153,7 +153,7 @@ backreference. Simply, because so far the back link `aboard` is still transient.
 
 Brilliant!
 References, circles et. are working regardless these are references from
-and to list, objects, hashtables, array etc.
+and to lists, objects, hashtables, array etc.
 
 
 Understanding the Implementation

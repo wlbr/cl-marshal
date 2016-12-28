@@ -36,8 +36,8 @@ need to be pairs of slot and accessors."
   )
 
 (defmethod genkey ((self persist-hashtable))
-   (incf (next-key self)))
-   ;   (setf (next-key self) (1+ (next-key self))))
+  (incf (next-key self)))
+;   (setf (next-key self) (1+ (next-key self))))
 
 
 (defmethod getvalue ((self persist-hashtable) key)
@@ -95,28 +95,28 @@ to send it over a network or to store it in a database etc.")
 
 ;;; 12.02.99 cjo: auch dotted lists werden korrekt behandelt
 (defmethod marshal ((list list) &optional (circle-hash NIL))
-   (let* ((ckey NIL)
-          (output NIL)
-          (dotted-list (rest (last list))))
-
-      ; ========= circle-stuff
-      (setf ckey (getvalue circle-hash list))
-      (if ckey
-         (setq output (list (coding-idiom :reference) ckey))
-         (progn
-           (setq ckey (genkey circle-hash))
-           (setvalue circle-hash list ckey)
-           (if dotted-list
-	       (setf output (nconc output (list (marshal (car list) circle-hash)
-						(marshal (cdr list) circle-hash))))
-	       (loop for walker in list
-		  do (setf output (nconc output (list (marshal walker circle-hash))))))
-           (push ckey output)
-           (push (if dotted-list
+  (let* ((ckey NIL)
+         (output NIL)
+         (dotted-list (rest (last list))))
+    
+    ; ========= circle-stuff
+    (setf ckey (getvalue circle-hash list))
+    (if ckey
+        (setq output (list (coding-idiom :reference) ckey))
+        (progn
+          (setq ckey (genkey circle-hash))
+          (setvalue circle-hash list ckey)
+          (if dotted-list
+              (setf output (nconc output (list (marshal (car list) circle-hash)
+                                               (marshal (cdr list) circle-hash))))
+              (loop for walker in list
+                do (setf output (nconc output (list (marshal walker circle-hash))))))
+          (push ckey output)
+          (push (if dotted-list
                     (coding-idiom :dlist)
                     (coding-idiom :list))
-             output)))
-      output))
+                output)))
+    output))
 
 
 ;;;  04.01.99 cjo: wird jetzt als :array2 rausgeschrieben, dann ist eine unterscheidung zum alten
