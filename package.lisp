@@ -4,7 +4,7 @@
 ;;;
 ;;; Project: marshal
 ;;; Simple (de)serialization of Lisp datastructures.
-;;; 
+;;;
 ;;; File: package.lisp
 ;;;
 ;;; ***********************************************************
@@ -15,8 +15,9 @@
 (defpackage :marshal
   (:use :cl)
   (:nicknames :ms)
-  (:export :marshal
-           :unmarshal
-           :class-persistant-slots
-	   :initialize-unmarshalled-instance))
-
+  (:export
+   :*idiom-table*
+   :marshal
+   :unmarshal
+   :class-persistant-slots
+   :initialize-unmarshalled-instance))
