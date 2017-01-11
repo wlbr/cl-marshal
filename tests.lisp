@@ -103,7 +103,7 @@ Some numbers, string, lists and object references."))
                        :dimensions '(:width 2 :length 6)))
   (setf (ship6 self) (make-instance 'dinghy :name "Gig" :course 320 :cruise 5
                        :dimensions '(:width 2 :length 6) :aboard (ship4 self)))
-  
+
   (setf (dinghy (ship3 self)) (ship5 self))  ; ref only
   (setf (dinghy (ship4 self)) (ship6 self))  ; -> circle
   (setf (ships self) (list (ship1 self) (ship2 self) (ship4 self) (ship6 self)))
@@ -188,7 +188,7 @@ Some numbers, string, lists and object references."))
     (setf (gethash 4 ht) (ship4 self))
     (setf (gethash 5 ht) (ship5 self))
     (setf (gethash 6 ht) (ship6 self))
-    
+
     (assert-eql (dinghy (gethash 4 ht)) (gethash 6 ht))
     (assert-eql (gethash 4 ht) (aboard (gethash 6 ht)))
     (assert-not-eql ht umht)))
@@ -205,6 +205,24 @@ Some numbers, string, lists and object references."))
          (umdl (unmarshal (marshal dl))))
     (assert-equal (cddr umdl) 3)
     (assert-equal (cadr umdl) 2)))
+
+(def-test-method string-vector-fill-pointer-nil ((self typestest) :run nil)
+  (let* ((test-string (make-array 8
+				  :element-type    'character
+				  :initial-element #\a
+				  :adjustable      t
+				  :fill-pointer    nil))
+	 (restored (unmarshal (marshal test-string))))
+    (assert-true (string= restored "aaaaaaaa"))))
+
+(def-test-method string-vector-fill-pointer-t ((self typestest) :run nil)
+  (let* ((test-string (make-array 8
+				  :element-type    'character
+				  :initial-element #\a
+				  :adjustable      t
+				  :fill-pointer    t))
+	 (restored (unmarshal (marshal test-string))))
+    (assert-true (string= restored "aaaaaaaa"))))
 
 (progn
   (print "Testcase Objecttest")
