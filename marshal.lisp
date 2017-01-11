@@ -153,34 +153,22 @@ to send it over a network or to store it in a database etc.")
                              object))))
     output))
 
-(defun %marshal-string (object circle-hash fill-pointer adjustable-array-p)
-  (let ((ckey (genkey circle-hash)))
-    (setvalue circle-hash object ckey)
-    (list (coding-idiom :string) ckey
-	  fill-pointer
-	  adjustable-array-p
-	  (princ-to-string object))))
-
 (defun marshal-string (object circle-hash)
   (let* ((ckey NIL)
          (output NIL))
     (setf ckey (getvalue circle-hash object))
     (if ckey
         (setq output (list (coding-idiom :reference) ckey))
-	(let ((adjustable-array-p (adjustable-array-p object)))
-	  (handler-case
-	      (let ((fill-pointer (fill-pointer object)))
-		(setf output
-		      (%marshal-string object
-				       circle-hash
-				       fill-pointer
-				       adjustable-array-p)))
-	    (type-error ()
-	      (setf output
-		    (%marshal-string object
-				     circle-hash
-				     nil
-				     adjustable-array-p))))))
+        (let ( (fill-pointer (if (array-has-fill-pointer-p object) (fill-pointer object) nil))
+              (adjustable-array-p (adjustable-array-p object)))
+          (setq ckey (genkey circle-hash))
+          (setvalue circle-hash object ckey) 
+          (when fill-pointer (setf (fill-pointer object) (array-dimension object 0))) ; was 0, was: NIL
+          (setq output (list (coding-idiom :string) ckey
+                             fill-pointer
+                             adjustable-array-p
+                             (princ-to-string object)))
+          (when fill-pointer (setf (fill-pointer object) fill-pointer))))
     output))
 
 (defmethod marshal ((object string) &optional (circle-hash NIL))
