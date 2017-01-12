@@ -16,13 +16,14 @@
 
 ;;; =============================================================
 
+(defgeneric class-persistant-slots (class)
+  (:documentation
+   "Defines the slots that will be serialized. Has to return list of valid slotnames.
+If this is a nested list, then the elements of the second level
+need to be pairs of slot and accessors."))
 
 (defmethod class-persistant-slots ((class standard-object))
-  "Defines the slots that will be serialized. Has to return list of valid slotnames.
-If this is a nested list, then the elements of the second level
-need to be pairs of slot and accessors."
   NIL)
-
 
 ;;; =============================================================
 
@@ -35,22 +36,29 @@ need to be pairs of slot and accessors."
   (setf (hashtable self) (make-hash-table :test #'eq :size 50 :rehash-size 1.5))
   )
 
+
+(defgeneric genkey (self))
+
+
 (defmethod genkey ((self persist-hashtable))
   (incf (next-key self)))
 ;   (setf (next-key self) (1+ (next-key self))))
+
+
+(defgeneric getvalue (self key))
 
 
 (defmethod getvalue ((self persist-hashtable) key)
   (gethash key (hashtable self)))
 
 
+(defgeneric setvalue (self key value))
+
+
 (defmethod setvalue ((self persist-hashtable) key value)
   (setf (gethash key (hashtable self)) value))
 
-
-
 ;;; =============================================================
-
 
 (defgeneric marshal (thing &optional circle-hash)
   (:documentation "Generates an sexp when called with an object. The sexp can be used
@@ -140,6 +148,8 @@ to send it over a network or to store it in a database etc.")
           (setq output (nconc output (list (nreverse dummy))))))
     output))
 
+(defgeneric marshal-simple-string (object circle-hash))
+
 (defmethod marshal-simple-string (object circle-hash)
   (let* ((ckey NIL)
          (output NIL))
@@ -162,7 +172,7 @@ to send it over a network or to store it in a database etc.")
         (let ( (fill-pointer (if (array-has-fill-pointer-p object) (fill-pointer object) nil))
               (adjustable-array-p (adjustable-array-p object)))
           (setq ckey (genkey circle-hash))
-          (setvalue circle-hash object ckey) 
+          (setvalue circle-hash object ckey)
           (when fill-pointer (setf (fill-pointer object) (array-dimension object 0))) ; was 0, was: NIL
           (setq output (list (coding-idiom :string) ckey
                              fill-pointer
