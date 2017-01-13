@@ -32,7 +32,7 @@
    (course :initform 0 :initarg :course :accessor course)
    (cruise :initform 0 :initarg :cruise :accessor cruise) ; shall be transient
    (dinghy :initform NIL :initarg :dinghy :accessor dinghy)) ; another ship -> ref
-  (:documentation "A democlass. Some 'persistant slots', one transient.
+  (:documentation "A democlass. Some 'persistent slots', one transient.
 Some numbers, string, lists and object references."))
 
 (defgeneric ttostring (ship))
@@ -43,7 +43,8 @@ Some numbers, string, lists and object references."))
           (getf (dimensions self):length)
           (getf (dimensions self):width)))
 
-(defmethod ms:class-persistant-slots ((self ship))
+
+(defmethod ms:class-persistent-slots ((self ship))
   '(name dimensions course dinghy))
 
 
@@ -72,6 +73,7 @@ Some numbers, string, lists and object references."))
   ((aboard :initform NIL :initarg :aboard :accessor aboard)) ; another ship -> circular ref
   )
 
+;; note: intentionally misspelled
 (defmethod ms:class-persistant-slots ((self dinghy))
   (append (call-next-method) '(aboard)))
 

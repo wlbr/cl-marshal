@@ -16,14 +16,17 @@
 
 ;;; =============================================================
 
-(defgeneric class-persistant-slots (class)
-  (:documentation
-   "Defines the slots that will be serialized. Has to return list of valid slotnames.
+(eval-when  (:execute :load-toplevel :compile-toplevel)
+  (defgeneric class-persistent-slots (class)
+    (:documentation
+     "Defines the slots that will be serialized. Has to return list of valid slotnames.
 If this is a nested list, then the elements of the second level
 need to be pairs of slot and accessors."))
 
-(defmethod class-persistant-slots ((class standard-object))
-  NIL)
+  (defmethod class-persistent-slots ((class standard-object))
+    NIL)
+
+  (setf (symbol-function 'class-persistant-slots) #'class-persistent-slots))
 
 ;;; =============================================================
 
@@ -82,7 +85,7 @@ to send it over a network or to store it in a database etc.")
 
 (defmethod marshal ((object standard-object) &optional (circle-hash NIL))
   (let* ((class (class-of object))
-         (pslots (class-persistant-slots object))
+         (pslots (class-persistent-slots object))
          (dummy NIL)
          (outlist NIL))
 

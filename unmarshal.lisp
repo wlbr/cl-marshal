@@ -84,11 +84,11 @@
 (defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no)))
                          (type (eql (coding-idiom :object))) token &optional (circle-hash NIL))
   (let* ((out (allocate-instance (find-class (third token))))
-         (slots (class-persistant-slots out))
+         (slots (class-persistent-slots out))
          (values (cdddr token)))
-    
+
     (setf (gethash (second token) circle-hash) out)
-    
+
     (LOOP
       FOR slot IN slots
       FOR value IN values
@@ -133,9 +133,9 @@
                          (type (eql (coding-idiom :array))) token &optional (circle-hash NIL))
   (let ((out (make-array (third token) :element-type (fourth token)))
         (elements (fifth token)))
-    
+
     (setf (gethash (second token) circle-hash) out)
-    
+
     (LOOP
       FOR walker IN elements
       FOR e FROM 0 TO (1- (length elements))
@@ -156,7 +156,7 @@
                   (make-hash-table :size (third token) :rehash-size (fourth token)
                                    :rehash-threshold (fifth token) :test (sixth token))))
          (elements (eighth token)))
-    
+
     (setf (gethash (second token) circle-hash) out)
     (LOOP
       FOR key IN elements BY #'cddr

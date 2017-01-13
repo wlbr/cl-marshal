@@ -19,5 +19,6 @@
    :*idiom-table*
    :marshal
    :unmarshal
+   :class-persistent-slots
    :class-persistant-slots
    :initialize-unmarshalled-instance))
