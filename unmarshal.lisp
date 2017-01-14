@@ -23,7 +23,7 @@
 (defmethod initialize-unmarshalled-instance (object)
   "Called as the last step of the deserialization of an object.
 !Must return the object!!"
-  (initialize-instance object))
+  (shared-initialize object t))
 
 
 ;;; =============================================================
@@ -124,6 +124,13 @@
         (cons (unmarshal-it (first rest-liste))
               (first (loop for walker in (rest rest-liste)
                        collect (unmarshal-it walker))))))))
+
+(defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no)))
+                         (type (eql (coding-idiom :circular-list))) token
+                         &optional (circle-hash NIL))
+  (let ((flat (unmarshal-fn version :list token circle-hash)))
+    (setf (cdr (last flat)) flat)
+    flat))
 
 ;;;  04.01.99 cjo: weswegen ein neues coding-idom eingefuehrt wurde, um alte array "richtig"
 ;;;                einlesen zu koennen.

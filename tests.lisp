@@ -208,6 +208,22 @@ Some numbers, string, lists and object references."))
     (assert-equal (cddr umdl) 3)
     (assert-equal (cadr umdl) 2)))
 
+(def-test-method simple-circular-list ((self typestest) :run nil)
+  (let ((orig (list 2 2 3 4 5 6)))
+    (setf (cdr (last orig)) orig)
+    (let ((restored (unmarshal (marshal orig))))
+      (assert-true  (utils:circular-list-p restored))
+      (assert-equal (elt restored 8) 3))))
+
+(def-test-method simple-circular-list-2 ((self typestest) :run nil)
+  (let ((orig (list (vector 1.0 2.0) (vector 3.0 4.0) 2 2 3 4 5 6)))
+    (setf (cdr (last orig)) orig)
+    (let ((restored (unmarshal (marshal orig))))
+      (assert-true  (utils:circular-list-p restored))
+      (assert-true  (vectorp (elt restored 0)))
+      (assert-true  (vectorp (elt restored 1)))
+      (assert-true  (floatp  (elt (elt restored 0) 0))))))
+
 (def-test-method string-vector-fill-pointer-nil ((self typestest) :run nil)
   (let* ((test-string (make-array 8
 				  :element-type    'character

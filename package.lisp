@@ -12,6 +12,11 @@
 
 (require 'asdf)
 
+(defpackage :utils
+  (:use :cl)
+  (:export
+   :circular-list-p))
+
 (defpackage :marshal
   (:use :cl)
   (:nicknames :ms)

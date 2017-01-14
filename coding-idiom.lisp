@@ -4,7 +4,7 @@
 ;;;
 ;;; Project: marshal
 ;;; Simple (de)serialization of Lisp datastructures.
-;;; 
+;;;
 ;;; File: coding-idiom.lsp
 ;;;
 ;;; ***********************************************************
@@ -18,6 +18,7 @@
                               :coding-identifier :pcode
                               :list              :list
                               :dlist             :dlist
+			      :circular-list     :clist
                               :object            :object
                               :string            :string
                               :simple-string     :simple-string
@@ -28,8 +29,8 @@ increase verbosity or compactness by choosing your own 'language'.
 key= access code used inside the programs source code
 value= generated identifier.")
 
-(defmacro coding-idiom (key)
-  "Definition of the vocabulary of the generated serialization.You can 
+(defun coding-idiom (key)
+  "Definition of the vocabulary of the generated serialization.You can
 increase verbosity or compactness by choosing your own 'language'. Simply
 define your own vocabulary and redefine the variable ms:*idiom-table*."
   ;;; key= access code used inside the programs source code
@@ -37,19 +38,18 @@ define your own vocabulary and redefine the variable ms:*idiom-table*."
   (getf *idiom-table* key))
 
 
-;(defparameter *idiom-table* '(:array             :a
-;                              :hash-table        :h
-;                              :coding-identifier :pcode
-;                              :list              :l
-;                              :dlist             :d
-;                              :object            :o
-;                              :string            :s
-;                              :simple-string     :c
-;                              :reference         :r
-;                              :coding-release-no 1.1)
-;     "Definition of the vocabulary of the generated serialization. You can
-;increase verbosity or compactness by choosing your own 'language'.
-;key= access code used inside the programs source code
-;value= generated identifier.")
-
-
+;;(defparameter *idiom-table* '(:array             :a
+;;                              :hash-table        :h
+;;                              :coding-identifier :pcode
+;;                              :list              :l
+;;                              :dlist             :d
+;;                              :circular-list     :i
+;;                              :object            :o
+;;                              :string            :s
+;;                              :simple-string     :c
+;;                              :reference         :r
+;;                              :coding-release-no 1.1)
+;;     "Definition of the vocabulary of the generated serialization. You can
+;;increase verbosity or compactness by choosing your own 'language'.
+;;key= access code used inside the programs source code
+;;value= generated identifier.")

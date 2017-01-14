@@ -4,9 +4,9 @@
 ;;;
 ;;; Project: marshal
 ;;; Simple (de)serialization of Lisp datastructures.
-;;; 
+;;;
 ;;; File: package.lsp
-;;; 
+;;;
 ;;; ***********************************************************
 
 (asdf:defsystem :marshal
@@ -16,6 +16,7 @@
   :licence "MIT"
   :serial t
   :components ((:file "package")
+	       (:file "utils")
                (:file "coding-idiom")
                (:file "marshal")
                (:file "unmarshal")))
