@@ -23,7 +23,7 @@
 (defmethod initialize-unmarshalled-instance (object)
   "Called as the last step of the deserialization of an object.
 !Must return the object!!"
-  (initialize-instance object))
+  (shared-initialize object t))
 
 
 ;;; =============================================================
