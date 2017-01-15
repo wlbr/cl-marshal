@@ -103,13 +103,19 @@ to send it over a network or to store it in a database etc.")
         )
     outlist))
 
+(defun %walk-list (sequence output ckey key-idiom circle-hash)
+  (loop for walker in sequence
+     do (setf output (nconc output (list (marshal walker circle-hash)))))
+  (push ckey output)
+  (push (coding-idiom key-idiom) output))
 
 ;;; 12.02.99 cjo: auch dotted lists werden korrekt behandelt
 (defmethod marshal ((list list) &optional (circle-hash NIL))
   (let* ((ckey NIL)
          (output NIL)
-         (dotted-list (rest (last list))))
-
+	 (circular-list-p (utils:circular-list-p list))
+         (dotted-list-p   (and (not circular-list-p)
+			       (rest (last list)))))
     ; ========= circle-stuff
     (setf ckey (getvalue circle-hash list))
     (if ckey
@@ -117,16 +123,30 @@ to send it over a network or to store it in a database etc.")
         (progn
           (setq ckey (genkey circle-hash))
           (setvalue circle-hash list ckey)
-          (if dotted-list
-              (setf output (nconc output (list (marshal (car list) circle-hash)
-                                               (marshal (cdr list) circle-hash))))
-              (loop for walker in list
-                do (setf output (nconc output (list (marshal walker circle-hash))))))
-          (push ckey output)
-          (push (if dotted-list
-                    (coding-idiom :dlist)
-                    (coding-idiom :list))
-                output)))
+          (cond
+	    (dotted-list-p
+	     (setf output (nconc output (list (marshal (car list) circle-hash)
+					      (marshal (cdr list) circle-hash))))
+	     (push ckey output)
+	     (push (coding-idiom :dlist) output))
+	    (circular-list-p
+	     (let* ((*print-circle* t)
+		    (flat (do* ((stopper list)
+				(tail    (rest list) (rest tail))
+				(results (list (first stopper))))
+			       ((eq stopper tail) (reverse results))
+			    ;;(format t "~a stopper ~a ~%"  tail stopper)
+			    (push (first tail) results))))
+
+	       (loop for walker in flat
+		  do (setf output (nconc output (list (marshal walker circle-hash)))))
+	       (push ckey output)
+	       (push (coding-idiom :circular-list) output)))
+	    (t ;; proper list
+	     (loop for walker in list
+                do (setf output (nconc output (list (marshal walker circle-hash)))))
+	     (push ckey output)
+	     (push (coding-idiom :list) output)))))
     output))
 
 

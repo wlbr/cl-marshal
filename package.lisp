@@ -12,6 +12,13 @@
 
 (require 'asdf)
 
+(defpackage :utils
+  (:use :cl)
+  (:export
+   :circular-list-p
+   :dotted-list-p
+   :proper-list-p))
+
 (defpackage :marshal
   (:use :cl)
   (:nicknames :ms)
