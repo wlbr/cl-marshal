@@ -13,3 +13,12 @@
 	   (return-from circular-list-p t))
 	  ((null tail)
 	   (return-from circular-list-p nil))))))
+
+(defun dotted-list-p (l)
+  (and (not (circular-list-p l))
+       (not (null (cdr (last l))))))
+
+(defun proper-list-p (l)
+  (and (listp l)
+       (not (utils:circular-list-p l))
+       (not (utils:dotted-list-p   l))))

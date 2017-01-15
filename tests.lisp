@@ -241,6 +241,17 @@ Some numbers, string, lists and object references."))
       (assert-true (utils:circular-list-p restored))
       (assert-true (eq (elt restored 0) (elt restored 2))))))
 
+(def-test-method nested-circular-list ((self typestest) :run nil)
+  (let* ((orig     '#1=(2 2 #2=(a b) (#1# #1# (#1# #2#)) 5 #2# c . #1#))
+	 (restored (unmarshal (marshal orig))))
+    (assert-true (utils:circular-list-p restored))
+    (assert-true (eq (elt (elt orig     2) 0)
+		     (elt (elt restored 2) 0)))
+    (assert-true (eq (elt (elt restored 2) 0)
+		     'a))
+    (assert-true (eq (elt (elt restored 3) 1)
+		     restored))))
+
 (def-test-method string-vector-fill-pointer-nil ((self typestest) :run nil)
   (let* ((test-string (make-array 8
 				  :element-type    'character

@@ -18,11 +18,12 @@
                               :coding-identifier :pcode
                               :list              :list
                               :dlist             :dlist
-			      :circular-list     :clist
+                              :circular-list     :clist
                               :object            :object
                               :string            :string
                               :simple-string     :simple-string
                               :reference         :reference
+                              :placeholder       :placeholder
                               :coding-release-no 1)
      "Definition of the vocabulary of the generated serialization. You can
 increase verbosity or compactness by choosing your own 'language'.
@@ -48,6 +49,7 @@ define your own vocabulary and redefine the variable ms:*idiom-table*."
 ;;                              :string            :s
 ;;                              :simple-string     :c
 ;;                              :reference         :r
+;;                              :placeholder       :p
 ;;                              :coding-release-no 1.1)
 ;;     "Definition of the vocabulary of the generated serialization. You can
 ;;increase verbosity or compactness by choosing your own 'language'.
