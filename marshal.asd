@@ -17,6 +17,7 @@
   :serial t
   :components ((:file "package")
 	       (:file "utils")
+	       (:file "serialization-format")
                (:file "coding-idiom")
                (:file "marshal")
                (:file "unmarshal")))

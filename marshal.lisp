@@ -192,7 +192,7 @@ to send it over a network or to store it in a database etc.")
     (setf ckey (getvalue circle-hash object))
     (if ckey
         (setq output (list (coding-idiom :reference) ckey))
-        (let ( (fill-pointer (if (array-has-fill-pointer-p object) (fill-pointer object) nil))
+        (let ((fill-pointer (if (array-has-fill-pointer-p object) (fill-pointer object) nil))
               (adjustable-array-p (adjustable-array-p object)))
           (setq ckey (genkey circle-hash))
           (setvalue circle-hash object ckey)
@@ -207,7 +207,7 @@ to send it over a network or to store it in a database etc.")
 (defmethod marshal ((object string) &optional (circle-hash NIL))
   (typecase object
     (simple-string (marshal-simple-string object circle-hash))
-    (T (marshal-string object circle-hash))))
+    (T             (marshal-string object circle-hash))))
 
 ;;; cjo 15.1.1999 hash-function kann man nicht mehr auslesen!!!
 (defmethod marshal ((hash-table hash-table) &optional (circle-hash NIL))
@@ -223,12 +223,14 @@ to send it over a network or to store it in a database etc.")
           (setq output (list (coding-idiom :hash-table) ckey
                              (hash-table-size hash-table) (hash-table-rehash-size hash-table)
                              (hash-table-rehash-threshold hash-table) (hash-table-test hash-table)
-                             ;(hash-table-hash-function hash-table)
+                             ;;(hash-table-hash-function hash-table)
                              NIL
                              ))
           (maphash #'(lambda (key value)
-                       (setq dummy (nconc dummy (list (marshal key circle-hash) (marshal value circle-hash)))))
+                       (setq dummy
+			     (nconc dummy
+				    (list (marshal key circle-hash)
+					  (marshal value circle-hash)))))
                    hash-table)
-          (when dummy
-            (setq output (nconc output (list dummy))))))
+	  (setq output (nconc output (list dummy)))))
     output))
