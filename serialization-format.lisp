@@ -9,9 +9,6 @@
 (defun data-type (expr)
   (elt expr 0))
 
-(defun class-slots-values (expr)
-  (subseq expr 3))
-
 (defun list-values (expr)
   (subseq expr 2))
 
@@ -53,3 +50,12 @@
 
 (defun string-fill-pointer (expr)
   (elt expr 2))
+
+(defun object-class-name (expr)
+  (elt expr 2))
+
+(defun object-package-name (expr)
+  (elt expr 3))
+
+(defun class-slots-values (expr)
+  (subseq expr 4))

@@ -81,9 +81,12 @@
 ;;;  07.07.98 cjo: LOOP
 (defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no)))
                          (type (eql (coding-idiom :object))) token &optional (circle-hash NIL))
-  (let* ((out    (allocate-instance (find-class (third token))))
-         (slots  (class-persistent-slots out))
-         (values (fmt:class-slots-values token)))
+  (let* ((package    (find-package (fmt:object-package-name token)))
+         (values     (fmt:class-slots-values  token))
+	 (class-out  (find-class (intern (symbol-name (fmt:object-class-name token))
+					 package)))
+	 (out        (allocate-instance class-out))
+	 (slots      (class-persistent-slots  out)))
 
     (setf (gethash (fmt:id token) circle-hash) out)
 

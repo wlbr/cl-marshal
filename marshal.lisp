@@ -84,11 +84,10 @@ to send it over a network or to store it in a database etc.")
 
 
 (defmethod marshal ((object standard-object) &optional (circle-hash NIL))
-  (let* ((class (class-of object))
-         (pslots (class-persistent-slots object))
-         (dummy NIL)
+  (let* ((class   (class-of object))
+         (pslots  (class-persistent-slots object))
+         (dummy   NIL)
          (outlist NIL))
-
     (setq dummy (getvalue circle-hash object))
     (if dummy
         (setq outlist (list (coding-idiom :reference) dummy))
@@ -96,11 +95,16 @@ to send it over a network or to store it in a database etc.")
           (when pslots
             (setq dummy (genkey circle-hash))
             (setvalue circle-hash object dummy)
-            (setq outlist (list (coding-idiom :object) dummy (class-name class)))
+            (setf outlist (list (coding-idiom :object)
+				dummy
+				(class-name class)
+				(intern (package-name (symbol-package (class-name class)))
+					:keyword)))
             (dolist (walker pslots)
-              (setq outlist (nconc outlist (list (marshal (slot-value object walker) circle-hash))))
-              )))
-        )
+              (setq outlist
+		    (nconc outlist
+			   (list (marshal (slot-value object walker)
+					  circle-hash))))))))
     outlist))
 
 (defun %walk-list (sequence output ckey key-idiom circle-hash)

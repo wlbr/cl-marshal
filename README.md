@@ -186,7 +186,7 @@ deserialization process. This gives you the chance to initialize
 transient slots, that were not serialized, or to do other
 initialization tricks.
 
-There is a macro called coding idiom, that defines the language of the
+There is a function called 'coding-idiom', that defines the language of the
 marshalling. The default vocabulary is quite verbose. In case you are
 going to send the objects through a network, you may want to change
 that to a shorter set of verbs. Well, I think there are better ways

@@ -38,7 +38,9 @@
    :simple-string-value
    :string-value
    :string-adjustable-p
-   :string-fill-pointer))
+   :string-fill-pointer
+   :object-class-name
+   :object-package-name))
 
 (defpackage :marshal
   (:use :cl)

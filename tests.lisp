@@ -13,16 +13,15 @@
 ;;;
 ;;; ***********************************************************
 
-
 (in-package :cl-user)
 
 (require :marshal)
+
 (require :xlunit)
 
 (use-package :xlunit)
+
 (use-package :marshal)
-
-
 
 ;;; ***********************************************************
 ;; definition of test classes
@@ -47,7 +46,6 @@ Some numbers, string, lists and object references."))
 (defmethod ms:class-persistent-slots ((self ship))
   '(name dimensions course dinghy))
 
-
 (defclass sailingship (ship)
   ((sailarea :initform 0 :initarg :sailarea :accessor sailarea))
   )
@@ -55,7 +53,6 @@ Some numbers, string, lists and object references."))
 (defmethod ttostring ((self sailingship))
   (format nil "~a~%  Sail area: ~a sqm" (call-next-method) (sailarea self))
   )
-
 
 (defclass motorship (ship)
   ((enginepower :initform 0 :initarg :enginepower :accessor enginepower))
@@ -91,7 +88,6 @@ Some numbers, string, lists and object references."))
    (ships :accessor ships :initarg :ships))
   )
 
-
 (defmethod set-up ((self basetest))
   (setf (ship1 self) (make-instance 'ship :name "Ark" :course 360 :dimensions '(:width 30 :length 90)))
   (setf (ship2 self) (make-instance 'sailingship :name "Pinta" :course 270 :cruise 9
@@ -111,22 +107,17 @@ Some numbers, string, lists and object references."))
   (setf (ships self) (list (ship1 self) (ship2 self) (ship4 self) (ship6 self)))
   )
 
-
-
 (defclass objecttest (basetest)
   ()
   )
 
-
-
 (def-test-method test-objectref ((self objecttest) :run nil)
   (assert-equal '(:PCODE 1
-                         (:OBJECT 1 MOTORSHIP (:SIMPLE-STRING 2 "Titanic")
-                                  (:LIST 3 :WIDTH 28 :LENGTH 269) 320
-                                  (:OBJECT 4 DINGHY (:SIMPLE-STRING 5 "Gig") (:LIST 6 :WIDTH 2 :LENGTH 6)
-                                           320 (:LIST 7) (:REFERENCE 7))))
-		(marshal (ship3 self)))
-  )
+		  (:OBJECT 1 MOTORSHIP :COMMON-LISP-USER (:SIMPLE-STRING 2 "Titanic")
+		   (:LIST 3 :WIDTH 28 :LENGTH 269) 320
+		   (:OBJECT 4 DINGHY :COMMON-LISP-USER (:SIMPLE-STRING 5 "Gig")
+		    (:LIST 6 :WIDTH 2 :LENGTH 6) 320 (:LIST 7) (:REFERENCE 7))))
+		(marshal (ship3 self))))
 
 (def-test-method test-objectcircle ((self objecttest) :run nil)
   (let ((uma (unmarshal (marshal (ship4 self)))))
@@ -142,10 +133,6 @@ Some numbers, string, lists and object references."))
                 (aboard (fourth umshs))))
   )
 
-
-
-
-
 (defclass typestest (basetest)
   ()
   )
@@ -158,7 +145,6 @@ Some numbers, string, lists and object references."))
     (assert-eql 9 (aref umarr 9))
     (assert-not-eql arr umarr)
     ))
-
 
 (def-test-method complexarraytest ((self typestest) :run nil)
   (let* ((arr (make-array '(4 3 2) :initial-contents '(((1 2) (2 3) (3 4))
