@@ -15,13 +15,17 @@
 
 (in-package :cl-user)
 
+#-allegro
 (require :marshal)
 
+#-allegro
 (require :xlunit)
 
-(use-package :xlunit)
+(eval-when (:compile-toplevel)
+  (use-package :xlunit))
 
-(use-package :marshal)
+(eval-when (:compile-toplevel)
+  (use-package :marshal))
 
 ;;; ***********************************************************
 ;; definition of test classes
@@ -30,7 +34,7 @@
    (dimensions :initform '(:width 0 :length 0) :initarg :dimensions :accessor dimensions)
    (course :initform 0 :initarg :course :accessor course)
    (cruise :initform 0 :initarg :cruise :accessor cruise) ; shall be transient
-   (dinghy :initform NIL :initarg :dinghy :accessor dinghy)) ; another ship -> ref
+   (dinghy :initform nil :initarg :dinghy :accessor dinghy)) ; another ship -> ref
   (:documentation "A democlass. Some 'persistent slots', one transient.
 Some numbers, string, lists and object references."))
 
@@ -67,7 +71,7 @@ Some numbers, string, lists and object references."))
   )
 
 (defclass dinghy (ship)
-  ((aboard :initform NIL :initarg :aboard :accessor aboard)) ; another ship -> circular ref
+  ((aboard :initform nil :initarg :aboard :accessor aboard)) ; another ship -> circular ref
   )
 
 ;; note: intentionally misspelled
@@ -112,11 +116,11 @@ Some numbers, string, lists and object references."))
   )
 
 (def-test-method test-objectref ((self objecttest) :run nil)
-  (assert-equal '(:PCODE 1
-		  (:OBJECT 1 MOTORSHIP :COMMON-LISP-USER (:SIMPLE-STRING 2 "Titanic")
-		   (:LIST 3 :WIDTH 28 :LENGTH 269) 320
-		   (:OBJECT 4 DINGHY :COMMON-LISP-USER (:SIMPLE-STRING 5 "Gig")
-		    (:LIST 6 :WIDTH 2 :LENGTH 6) 320 (:LIST 7) (:REFERENCE 7))))
+  (assert-equal '(:pcode 1
+		  (:object 1 motorship :common-lisp-user (:simple-string 2 "Titanic")
+		   (:list 3 :width 28 :length 269) 320
+		   (:object 4 dinghy :common-lisp-user (:simple-string 5 "Gig")
+		    (:list 6 :width 2 :length 6) 320 (:list 7) (:reference 7))))
 		(marshal (ship3 self))))
 
 (def-test-method test-objectcircle ((self objecttest) :run nil)

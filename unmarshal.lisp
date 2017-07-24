@@ -37,7 +37,7 @@
       (if (eq (coding-idiom :coding-identifier) (first thing))
           (if (and (not (null (third thing))) (listp (third thing)))
               (unmarshal-fn (second thing) (first (third thing)) (third thing))
-              (unmarshal-fn (second thing) T (third thing)))
+              (unmarshal-fn (second thing) t (third thing)))
           thing)
       thing)
   )
@@ -49,7 +49,7 @@
 
 
 (defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no)))
-                         type token &optional (circle-hash NIL))
+                         type token &optional (circle-hash nil))
   (declare (ignore type circle-hash))
   token)
 
@@ -57,8 +57,8 @@
   (make-hash-table :test #'eq :size 50 :rehash-size 1.5))
 
 (defmethod unmarshal-fn :around ((version (eql (coding-idiom :coding-release-no)))
-                                 type token &optional (circle-hash NIL))
-  (let ((result NIL))
+                                 type token &optional (circle-hash nil))
+  (let ((result nil))
     (if circle-hash
         (progn
           (setq result (call-next-method version type token circle-hash))
@@ -71,7 +71,7 @@
         )))
 
 (defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no)))
-                         (type (eql (coding-idiom :reference))) token &optional (circle-hash NIL))
+                         (type (eql (coding-idiom :reference))) token &optional (circle-hash nil))
   (let ((reference (gethash (fmt:id token) circle-hash)))
     (if (eq reference
             +reference-placeholder+)
@@ -80,7 +80,7 @@
 
 ;;;  07.07.98 cjo: LOOP
 (defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no)))
-                         (type (eql (coding-idiom :object))) token &optional (circle-hash NIL))
+                         (type (eql (coding-idiom :object))) token &optional (circle-hash nil))
   (let* ((package    (find-package (fmt:object-package-name token)))
          (values     (fmt:class-slots-values  token))
 	 (class-out  (find-class (intern (symbol-name (fmt:object-class-name token))
@@ -90,16 +90,16 @@
 
     (setf (gethash (fmt:id token) circle-hash) out)
 
-    (LOOP
-      FOR slot IN slots
-      FOR value IN values
-      DO (if (listp value)
+    (loop
+      for slot in slots
+      for value in values
+      do (if (listp value)
              (setf (slot-value out slot)
                    (unmarshal-fn version
                                  (fmt:data-type value)
                                  value
                                  circle-hash))
-             (setf (slot-value out slot) (unmarshal-fn version T value circle-hash))))
+             (setf (slot-value out slot) (unmarshal-fn version t value circle-hash))))
     (initialize-unmarshalled-instance out)))
 
 (defun token-reference-p (token)
@@ -112,9 +112,9 @@
 
 (defun second-pass-list (version token circle-hash &optional (max-depth 4))
   (when (> max-depth 0)
-    (LOOP
-       FOR walker IN token
-       FOR i from 0        do
+    (loop
+       for walker in token
+       for i from 0        do
          (cond
            ((and (utils:proper-list-p walker)
                  (token-reference-p walker))
@@ -132,13 +132,13 @@
 ;;; 12.02.99 cjo: aufgespalten wegen dotted lists
 (defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no)))
                          (type (eql (coding-idiom :list))) token
-                         &optional (circle-hash NIL))
+                         &optional (circle-hash nil))
   (let ((out (if (subseq token 2)
                  +reference-placeholder+
                  nil))
         (local-circle-hash (make-circle-hash)))
     (setf (gethash (fmt:id token) circle-hash) out)
-    (let ((first-pass (LOOP FOR walker IN (fmt:list-values token) COLLECT
+    (let ((first-pass (loop for walker in (fmt:list-values token) collect
                            (if (listp walker)
                                (progn
                                  (setf (gethash (fmt:id walker) local-circle-hash)
@@ -147,14 +147,14 @@
                                                      walker
                                                      circle-hash))
                                  (gethash (fmt:id walker) local-circle-hash))
-                               (unmarshal-fn version T walker circle-hash)))))
+                               (unmarshal-fn version t walker circle-hash)))))
       (if (not (token-reference-p token))
           (setf (gethash (fmt:id token) local-circle-hash) first-pass))
       (second-pass-list  version first-pass local-circle-hash))))
 
 (defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no)))
                          (type (eql (coding-idiom :dlist))) token
-                         &optional (circle-hash NIL))
+                         &optional (circle-hash nil))
     (let ((out (if (subseq token 2)
                    +reference-placeholder+
                    nil)))
@@ -163,14 +163,14 @@
         (flet ((unmarshal-it (item)
                  (if (listp item)
                      (unmarshal-fn version (fmt:data-type item) item circle-hash)
-                     (unmarshal-fn version T item circle-hash))))
+                     (unmarshal-fn version t item circle-hash))))
           (cons (unmarshal-it (first rest-liste))
                 (first (loop for walker in (rest rest-liste)
                           collect (unmarshal-it walker))))))))
 
 (defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no)))
                          (type (eql (coding-idiom :circular-list))) token
-                         &optional (circle-hash NIL))
+                         &optional (circle-hash nil))
   (let ((flat (unmarshal-fn version :list token circle-hash)))
     (setf (cdr (last flat)) flat)
     flat))
@@ -180,30 +180,30 @@
 ;;;  18.08.98 cjo: encode von array wurde umgedreht
 ;;;  10.11.11 mw: removed the old (wrong) array method
 (defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no)))
-                         (type (eql (coding-idiom :array))) token &optional (circle-hash NIL))
+                         (type (eql (coding-idiom :array))) token &optional (circle-hash nil))
   (let ((out (make-array (fmt:array-sizes token)
                          :element-type (fmt:array-elements-type token)))
         (elements (fmt:array-values token)))
 
     (setf (gethash (fmt:id token) circle-hash) out)
 
-    (LOOP
-      FOR walker IN elements
-      FOR e FROM 0 TO (1- (length elements))
-      DO (if (listp walker)
+    (loop
+      for walker in elements
+      for e from 0 to (1- (length elements))
+      do (if (listp walker)
              (setf (row-major-aref out e)
                    (unmarshal-fn version
                                  (fmt:data-type walker)
                                  walker
                                  circle-hash))
-             (setf (row-major-aref out e) (unmarshal-fn version T walker circle-hash))))
+             (setf (row-major-aref out e) (unmarshal-fn version t walker circle-hash))))
     out))
 
 
 ;;;  15.01.99 cjo: make-hash-table abgeaendert
 ;;;  07.07.98 cjo: LOOP
 (defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no)))
-                         (type (eql (coding-idiom :hash-table))) token &optional (circle-hash NIL))
+                         (type (eql (coding-idiom :hash-table))) token &optional (circle-hash nil))
   (let* ((hash-function    (fmt:ht-hash-fn          token))
          (size             (fmt:ht-size             token))
          (rehash-size      (fmt:ht-rehash-size      token))
@@ -221,18 +221,18 @@
                                                 :test             test)))
          (elements         (fmt:ht-values token)))
     (setf (gethash (fmt:id token) circle-hash) out)
-    (LOOP
-      FOR key   IN elements        BY #'cddr
-      FOR value IN (rest elements) BY #'cddr
-      DO (if (listp key)
+    (loop
+      for key   in elements        by #'cddr
+      for value in (rest elements) by #'cddr
+      do (if (listp key)
              (setf (gethash (unmarshal-fn version (fmt:data-type key) key circle-hash) out)
                    (if (listp value)
                        (unmarshal-fn version (fmt:data-type value) value circle-hash)
-                       (unmarshal-fn version T value circle-hash)))
-             (setf (gethash (unmarshal-fn version T key circle-hash) out)
+                       (unmarshal-fn version t value circle-hash)))
+             (setf (gethash (unmarshal-fn version t key circle-hash) out)
                    (if (listp value)
                        (unmarshal-fn version (fmt:data-type value) value circle-hash)
-                       (unmarshal-fn version T value circle-hash)))))
+                       (unmarshal-fn version t value circle-hash)))))
     out))
 
 
@@ -240,7 +240,7 @@
 ;;;  04.01.99 cjo: simple-strings
 (defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no)))
                          (type (eql (coding-idiom :simple-string))) token
-                         &optional (circle-hash NIL))
+                         &optional (circle-hash nil))
   (declare (ignore circle-hash))
   (fmt:simple-string-value token))
 
@@ -249,7 +249,7 @@
 ;;;  04.01.99 cjo: strings
 (defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no)))
                          (type (eql (coding-idiom :string))) token
-                         &optional (circle-hash NIL))
+                         &optional (circle-hash nil))
   (declare (ignore circle-hash))
   (let ((string (fmt:string-value token)))
     (make-array (length string)

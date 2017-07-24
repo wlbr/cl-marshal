@@ -24,14 +24,14 @@ If this is a nested list, then the elements of the second level
 need to be pairs of slot and accessors."))
 
   (defmethod class-persistent-slots ((class standard-object))
-    NIL)
+    nil)
 
   (setf (symbol-function 'class-persistant-slots) #'class-persistent-slots))
 
 ;;; =============================================================
 
 (defclass persist-hashtable ()
-  ((hashtable :initform NIL :accessor hashtable)
+  ((hashtable :initform nil :accessor hashtable)
    (next-key :initform 0 :accessor next-key)))
 
 (defmethod initialize-instance :after ((self persist-hashtable) &rest initargs)
@@ -69,12 +69,12 @@ to send it over a network or to store it in a database etc.")
   )
 
 
-(defmethod marshal (thing &optional (circle-hash NIL))
+(defmethod marshal (thing &optional (circle-hash nil))
   (declare (ignore circle-hash))
   thing)
 
 
-(defmethod marshal :around (thing &optional (circle-hash NIL))
+(defmethod marshal :around (thing &optional (circle-hash nil))
   (if circle-hash
       (call-next-method thing circle-hash)
       (progn
@@ -83,11 +83,11 @@ to send it over a network or to store it in a database etc.")
       ))
 
 
-(defmethod marshal ((object standard-object) &optional (circle-hash NIL))
+(defmethod marshal ((object standard-object) &optional (circle-hash nil))
   (let* ((class   (class-of object))
          (pslots  (class-persistent-slots object))
-         (dummy   NIL)
-         (outlist NIL))
+         (dummy   nil)
+         (outlist nil))
     (setq dummy (getvalue circle-hash object))
     (if dummy
         (setq outlist (list (coding-idiom :reference) dummy))
@@ -114,9 +114,9 @@ to send it over a network or to store it in a database etc.")
   (push (coding-idiom key-idiom) output))
 
 ;;; 12.02.99 cjo: auch dotted lists werden korrekt behandelt
-(defmethod marshal ((list list) &optional (circle-hash NIL))
-  (let* ((ckey NIL)
-         (output NIL)
+(defmethod marshal ((list list) &optional (circle-hash nil))
+  (let* ((ckey nil)
+         (output nil)
 	 (circular-list-p (utils:circular-list-p list))
          (dotted-list-p   (and (not circular-list-p)
 			       (rest (last list)))))
@@ -158,10 +158,10 @@ to send it over a network or to store it in a database etc.")
 ;;;                :array moeglich
 ;;;  10.08.98 cjo: nreverse vergessen! push dreht die liste um. wenn es bloede laeuft hat man so
 ;;;                :reference, bevor die nummer ueberhaupt existiert!
-(defmethod marshal ((array array) &optional (circle-hash NIL))
-  (let* ((ckey NIL)
-         (output NIL)
-         (dummy NIL))
+(defmethod marshal ((array array) &optional (circle-hash nil))
+  (let* ((ckey nil)
+         (output nil)
+         (dummy nil))
     (setf ckey (getvalue circle-hash array))
     (if ckey
         (setq output (list (coding-idiom :reference) ckey))
@@ -178,8 +178,8 @@ to send it over a network or to store it in a database etc.")
 (defgeneric marshal-simple-string (object circle-hash))
 
 (defmethod marshal-simple-string (object circle-hash)
-  (let* ((ckey NIL)
-         (output NIL))
+  (let* ((ckey nil)
+         (output nil))
     (setf ckey (getvalue circle-hash object))
     (if ckey
         (setq output (list (coding-idiom :reference) ckey))
@@ -191,8 +191,8 @@ to send it over a network or to store it in a database etc.")
     output))
 
 (defun marshal-string (object circle-hash)
-  (let* ((ckey NIL)
-         (output NIL))
+  (let* ((ckey nil)
+         (output nil))
     (setf ckey (getvalue circle-hash object))
     (if ckey
         (setq output (list (coding-idiom :reference) ckey))
@@ -200,7 +200,7 @@ to send it over a network or to store it in a database etc.")
               (adjustable-array-p (adjustable-array-p object)))
           (setq ckey (genkey circle-hash))
           (setvalue circle-hash object ckey)
-          (when fill-pointer (setf (fill-pointer object) (array-dimension object 0))) ; was 0, was: NIL
+          (when fill-pointer (setf (fill-pointer object) (array-dimension object 0))) ; was 0, was: nil
           (setq output (list (coding-idiom :string) ckey
                              fill-pointer
                              adjustable-array-p
@@ -208,16 +208,16 @@ to send it over a network or to store it in a database etc.")
           (when fill-pointer (setf (fill-pointer object) fill-pointer))))
     output))
 
-(defmethod marshal ((object string) &optional (circle-hash NIL))
+(defmethod marshal ((object string) &optional (circle-hash nil))
   (typecase object
     (simple-string (marshal-simple-string object circle-hash))
-    (T             (marshal-string object circle-hash))))
+    (t             (marshal-string object circle-hash))))
 
 ;;; cjo 15.1.1999 hash-function kann man nicht mehr auslesen!!!
-(defmethod marshal ((hash-table hash-table) &optional (circle-hash NIL))
-  (let* ((ckey NIL)
-         (output NIL)
-         (dummy NIL))
+(defmethod marshal ((hash-table hash-table) &optional (circle-hash nil))
+  (let* ((ckey nil)
+         (output nil)
+         (dummy nil))
     (setf ckey (getvalue circle-hash hash-table))
     (if ckey
         (setq output (list (coding-idiom :reference) ckey))
@@ -228,7 +228,7 @@ to send it over a network or to store it in a database etc.")
                              (hash-table-size hash-table) (hash-table-rehash-size hash-table)
                              (hash-table-rehash-threshold hash-table) (hash-table-test hash-table)
                              ;;(hash-table-hash-function hash-table)
-                             NIL
+                             nil
                              ))
           (maphash #'(lambda (key value)
                        (setq dummy
