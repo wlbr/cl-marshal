@@ -13,16 +13,19 @@
 ;;;
 ;;; ***********************************************************
 
-
 (in-package :cl-user)
 
+#-allegro
 (require :marshal)
+
+#-allegro
 (require :xlunit)
 
-(use-package :xlunit)
-(use-package :marshal)
+(eval-when (:compile-toplevel)
+  (use-package :xlunit))
 
-
+(eval-when (:compile-toplevel)
+  (use-package :marshal))
 
 ;;; ***********************************************************
 ;; definition of test classes
@@ -31,8 +34,8 @@
    (dimensions :initform '(:width 0 :length 0) :initarg :dimensions :accessor dimensions)
    (course :initform 0 :initarg :course :accessor course)
    (cruise :initform 0 :initarg :cruise :accessor cruise) ; shall be transient
-   (dinghy :initform NIL :initarg :dinghy :accessor dinghy :initarg :dinghy)) ; another ship -> ref
-  (:documentation "A democlass. Some 'persistant slots', one transient.
+   (dinghy :initform nil :initarg :dinghy :accessor dinghy)) ; another ship -> ref
+  (:documentation "A democlass. Some 'persistent slots', one transient.
 Some numbers, string, lists and object references."))
 
 (defgeneric ttostring (ship))
@@ -43,9 +46,9 @@ Some numbers, string, lists and object references."))
           (getf (dimensions self):length)
           (getf (dimensions self):width)))
 
-(defmethod ms:class-persistant-slots ((self ship))
-  '(name dimensions course dinghy))
 
+(defmethod ms:class-persistent-slots ((self ship))
+  '(name dimensions course dinghy))
 
 (defclass sailingship (ship)
   ((sailarea :initform 0 :initarg :sailarea :accessor sailarea))
@@ -54,7 +57,6 @@ Some numbers, string, lists and object references."))
 (defmethod ttostring ((self sailingship))
   (format nil "~a~%  Sail area: ~a sqm" (call-next-method) (sailarea self))
   )
-
 
 (defclass motorship (ship)
   ((enginepower :initform 0 :initarg :enginepower :accessor enginepower))
@@ -69,9 +71,10 @@ Some numbers, string, lists and object references."))
   )
 
 (defclass dinghy (ship)
-  ((aboard :initform NIL :initarg :aboard :accessor aboard)) ; another ship -> circular ref
+  ((aboard :initform nil :initarg :aboard :accessor aboard)) ; another ship -> circular ref
   )
 
+;; note: intentionally misspelled
 (defmethod ms:class-persistant-slots ((self dinghy))
   (append (call-next-method) '(aboard)))
 
@@ -88,7 +91,6 @@ Some numbers, string, lists and object references."))
    (ship6 :accessor ship6 :initarg :ship6)
    (ships :accessor ships :initarg :ships))
   )
-
 
 (defmethod set-up ((self basetest))
   (setf (ship1 self) (make-instance 'ship :name "Ark" :course 360 :dimensions '(:width 30 :length 90)))
@@ -109,22 +111,17 @@ Some numbers, string, lists and object references."))
   (setf (ships self) (list (ship1 self) (ship2 self) (ship4 self) (ship6 self)))
   )
 
-
-
 (defclass objecttest (basetest)
   ()
   )
 
-
-
 (def-test-method test-objectref ((self objecttest) :run nil)
-  (assert-equal '(:PCODE 1
-                         (:OBJECT 1 MOTORSHIP (:SIMPLE-STRING 2 "Titanic")
-                                  (:LIST 3 :WIDTH 28 :LENGTH 269) 320
-                                  (:OBJECT 4 DINGHY (:SIMPLE-STRING 5 "Gig") (:LIST 6 :WIDTH 2 :LENGTH 6)
-                                           320 (:LIST 7) (:REFERENCE 7))))
-		(marshal (ship3 self)))
-  )
+  (assert-equal '(:pcode 1
+		  (:object 1 motorship :common-lisp-user (:simple-string 2 "Titanic")
+		   (:list 3 :width 28 :length 269) 320
+		   (:object 4 dinghy :common-lisp-user (:simple-string 5 "Gig")
+		    (:list 6 :width 2 :length 6) 320 (:list 7) (:reference 7))))
+		(marshal (ship3 self))))
 
 (def-test-method test-objectcircle ((self objecttest) :run nil)
   (let ((uma (unmarshal (marshal (ship4 self)))))
@@ -140,10 +137,6 @@ Some numbers, string, lists and object references."))
                 (aboard (fourth umshs))))
   )
 
-
-
-
-
 (defclass typestest (basetest)
   ()
   )
@@ -156,7 +149,6 @@ Some numbers, string, lists and object references."))
     (assert-eql 9 (aref umarr 9))
     (assert-not-eql arr umarr)
     ))
-
 
 (def-test-method complexarraytest ((self typestest) :run nil)
   (let* ((arr (make-array '(4 3 2) :initial-contents '(((1 2) (2 3) (3 4))
@@ -205,6 +197,50 @@ Some numbers, string, lists and object references."))
          (umdl (unmarshal (marshal dl))))
     (assert-equal (cddr umdl) 3)
     (assert-equal (cadr umdl) 2)))
+
+(def-test-method simple-circular-list ((self typestest) :run nil)
+  (let ((orig (list 2 2 3 4 5 6)))
+    (setf (cdr (last orig)) orig)
+    (let ((restored (unmarshal (marshal orig))))
+      (assert-true  (utils:circular-list-p restored))
+      (assert-equal (elt restored 8) 3))))
+
+(def-test-method simple-circular-list-2 ((self typestest) :run nil)
+  (let ((orig (list (vector 1.0 2.0) (vector 3.0 4.0) 2 2 3 4 5 6)))
+    (setf (cdr (last orig)) orig)
+    (let ((restored (unmarshal (marshal orig))))
+      (assert-true (utils:circular-list-p restored))
+      (assert-true (vectorp (elt restored 0)))
+      (assert-true (vectorp (elt restored 1)))
+      (assert-true (floatp  (elt (elt restored 0) 0))))))
+
+(def-test-method object-circular-list ((self typestest) :run nil)
+  (let ((orig (list (make-instance 'ship :name "a")
+		    (make-instance 'ship :name "b")
+		    (make-instance 'ship :name "c"))))
+    (setf (cdr (last orig)) orig)
+    (let ((restored (unmarshal (marshal orig))))
+      (assert-true (utils:circular-list-p restored))
+      (assert-true (string= (name (elt restored 0)) "a")))))
+
+(def-test-method object-circular-list-w-reference ((self typestest) :run nil)
+  (let* ((object (list (make-instance 'ship :name "a")))
+	 (orig     (list object 2 object 3)))
+    (setf (cdr (last orig)) orig)
+    (let ((restored (unmarshal (marshal orig))))
+      (assert-true (utils:circular-list-p restored))
+      (assert-true (eq (elt restored 0) (elt restored 2))))))
+
+(def-test-method nested-circular-list ((self typestest) :run nil)
+  (let* ((orig     '#1=(2 2 #2=(a b) (#1# #1# (#1# #2#)) 5 #2# c . #1#))
+	 (restored (unmarshal (marshal orig))))
+    (assert-true (utils:circular-list-p restored))
+    (assert-true (eq (elt (elt orig     2) 0)
+		     (elt (elt restored 2) 0)))
+    (assert-true (eq (elt (elt restored 2) 0)
+		     'a))
+    (assert-true (eq (elt (elt restored 3) 1)
+		     restored))))
 
 (def-test-method string-vector-fill-pointer-nil ((self typestest) :run nil)
   (let* ((test-string (make-array 8
