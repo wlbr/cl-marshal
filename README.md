@@ -16,7 +16,7 @@ MIT License. See included LICENSE file.
 
 Usage
 -----
-###Basic Usage
+### Basic Usage
 
 For this ASDF needs to be installed and has to have access to marshal.asd.
 Otherwise do a load *.lisp/tests-.lisp.
@@ -47,7 +47,7 @@ returns a deep clone of myobject.
 
 
 
-###Advanced Usage
+### Advanced Usage
 Definition of a class
 
      (defclass ship ()
