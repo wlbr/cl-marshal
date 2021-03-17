@@ -91,20 +91,24 @@ to send it over a network or to store it in a database etc.")
     (setq dummy (getvalue circle-hash object))
     (if dummy
         (setq outlist (list (coding-idiom :reference) dummy))
-        (progn
-          (when pslots
-            (setq dummy (genkey circle-hash))
-            (setvalue circle-hash object dummy)
-            (setf outlist (list (coding-idiom :object)
-				dummy
-				(class-name class)
-				(intern (package-name (symbol-package (class-name class)))
-					:keyword)))
-            (dolist (walker pslots)
-              (setq outlist
-		    (nconc outlist
-			   (list (marshal (slot-value object walker)
-					  circle-hash))))))))
+        (if pslots
+            (progn
+              (setq dummy (genkey circle-hash))
+              (setvalue circle-hash object dummy)
+              (setf outlist (list (coding-idiom :object)
+				  dummy
+				  (class-name class)
+				  (intern (package-name (symbol-package (class-name class)))
+					  :keyword)))
+              (dolist (walker pslots)
+                (setq outlist
+		      (nconc outlist
+			     (list (marshal (slot-value object walker)
+					    circle-hash))))))
+            (error (format nil
+                           "I can not find serializable slots for class ~a. Specialize the method 'ms:class-persistent-slots' on ~a to allow marshalling."
+                           class
+                           class))))
     outlist))
 
 (defun %walk-list (sequence output ckey key-idiom circle-hash)
