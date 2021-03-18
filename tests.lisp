@@ -258,22 +258,40 @@ Some numbers, string, lists and object references."))
 	 (restored (unmarshal (marshal test-string))))
     (assert-true (string= restored "aaaaaaaa"))))
 
-(defclass unserializable () ())
+(defclass unserializable ()
+  ((some-slot
+    :initform :default-value
+    :accessor some-slot
+    :initarg  :some-slot)))
 
 (defclass unserializable-wrapper ()
   ((unserializable-slot
     :accessor unserializable-slot
     :initarg :unserializable-slot
-    :initform nil)))
+    :initform (make-instance 'unserializable))))
 
 (defmethod ms:class-persistent-slots ((object unserializable-wrapper))
   '(unserializable-slot))
 
 (def-test-method fails-unserializable ((self typestest) :run nil)
   (assert-condition 'error
-      (let ((instance (make-instance 'unserializable-wrapper
-                                     :unserializable-slot (make-instance 'unserializable))))
+     (let ((*signal-unserializable-class* t)
+           (instance (make-instance 'unserializable-wrapper)))
         (ms:marshal instance))))
+
+(def-test-method nil-value-slots-when-unserializable ((self typestest) :run nil)
+  (assert-true
+     (let ((*signal-unserializable-class* nil)
+           (instance (make-instance 'unserializable-wrapper
+                                    :unserializable-slot (make-instance 'unserializable))))
+       (typep (unserializable-slot (ms:unmarshal (ms:marshal instance)))
+              'unserializable)))
+  (assert-true
+     (let ((*signal-unserializable-class* nil)
+           (instance (make-instance 'unserializable-wrapper
+                                    :unserializable-slot (make-instance 'unserializable))))
+       (eq (some-slot (unserializable-slot (ms:unmarshal (ms:marshal instance))))
+           :default-value))))
 
 (progn
   (print "Testcase Objecttest")
