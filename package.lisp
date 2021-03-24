@@ -47,7 +47,6 @@
   (:nicknames :ms)
   (:export
    :*idiom-table*
-   :*signal-unserializable-class*
    :marshal
    :unmarshal
    :class-persistent-slots

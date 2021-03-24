@@ -273,22 +273,14 @@ Some numbers, string, lists and object references."))
 (defmethod ms:class-persistent-slots ((object unserializable-wrapper))
   '(unserializable-slot))
 
-(def-test-method fails-unserializable ((self typestest) :run nil)
-  (assert-condition 'error
-     (let ((*signal-unserializable-class* t)
-           (instance (make-instance 'unserializable-wrapper)))
-        (ms:marshal instance))))
-
 (def-test-method nil-value-slots-when-unserializable ((self typestest) :run nil)
   (assert-true
-     (let ((*signal-unserializable-class* nil)
-           (instance (make-instance 'unserializable-wrapper
+     (let ((instance (make-instance 'unserializable-wrapper
                                     :unserializable-slot (make-instance 'unserializable))))
        (typep (unserializable-slot (ms:unmarshal (ms:marshal instance)))
               'unserializable)))
   (assert-true
-     (let ((*signal-unserializable-class* nil)
-           (instance (make-instance 'unserializable-wrapper
+     (let ((instance (make-instance 'unserializable-wrapper
                                     :unserializable-slot (make-instance 'unserializable))))
        (eq (some-slot (unserializable-slot (ms:unmarshal (ms:marshal instance))))
            :default-value))))

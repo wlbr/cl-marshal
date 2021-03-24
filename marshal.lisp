@@ -13,13 +13,6 @@
 
 (in-package :marshal)
 
-(defparameter *signal-unserializable-class* nil
-  "When  non-nil,   any  attempts  to   serialize  a  class   with  no
-serializable    slots   defined    with   specializing    the   method
-`ms:class-persistent-slots' will  return an error.  A  null value will
-just serialize  the object  with slots filled  with default  value (as
-specified with initform).")
-
 ;;; =============================================================
 
 (eval-when  (:execute :load-toplevel :compile-toplevel)
@@ -105,20 +98,13 @@ to send it over a network or to store it in a database etc.")
 			      (class-name class)
 			      (intern (package-name (symbol-package (class-name class)))
 				      :keyword)))
-          (cond
-            (pslots
+          (if pslots
              (dolist (walker pslots)
                (setq outlist
 		     (nconc outlist
 			    (list (marshal (slot-value object walker)
-					   circle-hash))))))
-            (*signal-unserializable-class*
-             (error (format nil
-                            "I can not find serializable slots for class ~a. Specialize the method 'ms:class-persistent-slots' on ~a to allow marshalling."
-                            class
-                            class)))
-             (t
-              (setq outlist (nconc outlist (list (marshal nil circle-hash))))))))
+					   circle-hash)))))
+             (setq outlist (nconc outlist (list (marshal nil circle-hash)))))))
     outlist))
 
 (defun %walk-list (sequence output ckey key-idiom circle-hash)
