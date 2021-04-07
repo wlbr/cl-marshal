@@ -232,15 +232,13 @@ Some numbers, string, lists and object references."))
       (assert-true (eq (elt restored 0) (elt restored 2))))))
 
 (def-test-method nested-circular-list ((self typestest) :run nil)
-  (let* ((orig     '#1=(2 2 #2=(a b) (#1# #1# (#1# #2#)) 5 #2# c . #1#))
-	 (restored (unmarshal (marshal orig))))
-    (assert-true (utils:circular-list-p restored))
-    (assert-true (eq (elt (elt orig     2) 0)
-		     (elt (elt restored 2) 0)))
-    (assert-true (eq (elt (elt restored 2) 0)
-		     'a))
-    (assert-true (eq (elt (elt restored 3) 1)
-		     restored))))
+   (let* ((orig     '#1=(2 2 #2=(a b) (#1# #1# (#1# #2#)) 5 #2# c . #1#))
+          (restored (unmarshal (marshal orig))))
+     (assert-true (utils:circular-list-p restored))
+     (assert-true (eq (caaddr orig)
+         	      (caaddr restored)))
+     (assert-true (eq (caaddr restored)
+                      'a))))
 
 (def-test-method string-vector-fill-pointer-nil ((self typestest) :run nil)
   (let* ((test-string (make-array 8
@@ -259,6 +257,33 @@ Some numbers, string, lists and object references."))
 				  :fill-pointer    t))
 	 (restored (unmarshal (marshal test-string))))
     (assert-true (string= restored "aaaaaaaa"))))
+
+(defclass unserializable ()
+  ((some-slot
+    :initform :default-value
+    :accessor some-slot
+    :initarg  :some-slot)))
+
+(defclass unserializable-wrapper ()
+  ((unserializable-slot
+    :accessor unserializable-slot
+    :initarg :unserializable-slot
+    :initform (make-instance 'unserializable))))
+
+(defmethod ms:class-persistent-slots ((object unserializable-wrapper))
+  '(unserializable-slot))
+
+(def-test-method nil-value-slots-when-unserializable ((self typestest) :run nil)
+  (assert-true
+     (let ((instance (make-instance 'unserializable-wrapper
+                                    :unserializable-slot (make-instance 'unserializable))))
+       (typep (unserializable-slot (ms:unmarshal (ms:marshal instance)))
+              'unserializable)))
+  (assert-true
+     (let ((instance (make-instance 'unserializable-wrapper
+                                    :unserializable-slot (make-instance 'unserializable))))
+       (eq (some-slot (unserializable-slot (ms:unmarshal (ms:marshal instance))))
+           :default-value))))
 
 (progn
   (print "Testcase Objecttest")
