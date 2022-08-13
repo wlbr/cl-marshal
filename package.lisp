@@ -40,7 +40,8 @@
    :string-adjustable-p
    :string-fill-pointer
    :object-class-name
-   :object-package-name))
+   :object-package-name
+   :function-value-package-name))
 
 (defpackage :marshal
   (:use :cl)

@@ -24,6 +24,7 @@
                               :object            :object
                               :string            :string
                               :simple-string     :simple-string
+                              :function          :function
                               :reference         :reference
                               :coding-release-no 1)
      "Definition of the vocabulary of the generated serialization. You can

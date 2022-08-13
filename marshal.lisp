@@ -81,6 +81,17 @@ to send it over a network or to store it in a database etc.")
         (list (coding-idiom :coding-identifier) (coding-idiom :coding-release-no) (call-next-method thing circle-hash)))
       ))
 
+(defun get-function-name (function)
+  "Implementation dependent"
+  (assert (functionp function))
+  #+sbcl (multiple-value-bind (x y name)
+             (function-lambda-expression function)
+           (declare (ignore x y))
+           (symbol-name name))
+  #+ccl  (function-name function))
+
+(defun symbol->package (symbol)
+  (package-name (symbol-package symbol)))
 
 (defmethod marshal ((object standard-object) &optional (circle-hash nil))
   (let* ((class   (class-of object))
@@ -96,7 +107,7 @@ to send it over a network or to store it in a database etc.")
           (setf outlist (list (coding-idiom :object)
 			      dummy
 			      (class-name class)
-			      (intern (package-name (symbol-package (class-name class)))
+			      (intern (symbol->package (class-name class))
 				      :keyword)))
           (if pslots
              (dolist (walker pslots)
@@ -237,4 +248,21 @@ to send it over a network or to store it in a database etc.")
 					  (marshal value circle-hash)))))
                    hash-table)
 	  (setq output (nconc output (list dummy)))))
+    output))
+
+(defmethod marshal ((object function) &optional (circle-hash nil))
+  (let* ((ckey nil)
+         (output nil)
+         (function-name    (get-function-name object))
+         (function-package (symbol->package (find-symbol function-name)))
+         (function-string  (format nil "~a:~a" function-package function-name)))
+    (setf ckey (getvalue circle-hash function-string))
+    (if ckey
+        (setq output (list (coding-idiom :reference) ckey))
+        (progn
+          (setq ckey (genkey circle-hash))
+          (setvalue circle-hash function-string ckey)
+          (setq output (list (coding-idiom :function)
+                             ckey
+                             function-string))))
     output))

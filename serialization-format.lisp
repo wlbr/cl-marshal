@@ -59,3 +59,17 @@
 
 (defun class-slots-values (expr)
   (subseq expr 4))
+
+(defun function-value (expr)
+  (elt expr 2))
+
+(defun function-value-package-name (expr)
+  (let* ((package-separator          #\:)
+         (value                      (function-value expr))
+         (package-separator-position (position package-separator value :test #'char=))
+         (package                    (subseq value 0 package-separator-position))
+         (name                       (if (char= (elt value (1+ package-separator-position))
+                                                package-separator)
+                                         (subseq value (+ package-separator-position 2))
+                                         (subseq value (1+ package-separator-position)))))
+    (values package name)))

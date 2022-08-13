@@ -258,6 +258,15 @@
                 :adjustable       (fmt:string-adjustable-p token)
                 :fill-pointer     (fmt:string-fill-pointer token))))
 
+
+(defmethod unmarshal-fn ((version (eql (coding-idiom :coding-release-no)))
+                         (type (eql (coding-idiom :function))) token
+                         &optional (circle-hash nil))
+  (declare (ignore circle-hash))
+  (multiple-value-bind (package-name function-name)
+      (fmt:function-value-package-name token)
+    (symbol-function (find-symbol function-name package-name))))
+
 ;;; =============================================================
 
 (pushnew :marshal *features*)
