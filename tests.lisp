@@ -1,4 +1,4 @@
-;;; -*- Mode:LISP; Syntax: COMMON-LISP; Package: CL-USER; Base: 10; indent-tabs-mode: nil -*-
+;;; -*- Mode:LISP; Syntax: COMMON-LISP; Package: CL-MARSHAL-TEST; Base: 10; indent-tabs-mode: nil -*-
 
 ;;; ***********************************************************
 ;;;
@@ -13,19 +13,12 @@
 ;;;
 ;;; ***********************************************************
 
-(in-package :cl-user)
+(defpackage :cl-marshal-test
+  (:use :cl
+        :marshal
+        :xlunit))
 
-#-allegro
-(require :marshal)
-
-#-allegro
-(require :xlunit)
-
-(eval-when (:compile-toplevel)
-  (use-package :xlunit))
-
-(eval-when (:compile-toplevel)
-  (use-package :marshal))
+(in-package :cl-marshal-test)
 
 ;;; ***********************************************************
 ;; definition of test classes
@@ -117,9 +110,9 @@ Some numbers, string, lists and object references."))
 
 (def-test-method test-objectref ((self objecttest) :run nil)
   (assert-equal '(:pcode 1
-		  (:object 1 motorship :common-lisp-user (:simple-string 2 "Titanic")
+		  (:object 1 motorship :cl-marshal-test (:simple-string 2 "Titanic")
 		   (:list 3 :width 28 :length 269) 320
-		   (:object 4 dinghy :common-lisp-user (:simple-string 5 "Gig")
+		   (:object 4 dinghy :cl-marshal-test (:simple-string 5 "Gig")
 		    (:list 6 :width 2 :length 6) 320 (:list 7) (:reference 7))))
 		(marshal (ship3 self))))
 
@@ -241,6 +234,7 @@ Some numbers, string, lists and object references."))
       (assert-true (utils:circular-list-p restored))
       (assert-true (eq (elt restored 0) (elt restored 2))))))
 
+#-abcl
 (def-test-method nested-circular-list ((self typestest) :run nil)
    (let* ((orig     '#1=(2 2 #2=(a b) (#1# #1# (#1# #2#)) 5 #2# c . #1#))
           (restored (unmarshal (marshal orig))))

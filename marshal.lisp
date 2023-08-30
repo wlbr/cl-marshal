@@ -84,11 +84,13 @@ to send it over a network or to store it in a database etc.")
 (defun get-function-name (function)
   "Implementation dependent"
   (assert (functionp function))
-  #+sbcl (multiple-value-bind (x y name)
-             (function-lambda-expression function)
-           (declare (ignore x y))
-           (symbol-name name))
-  #+ccl  (function-name function))
+  #+(or sbcl abcl ecl)
+  (multiple-value-bind (x y name)
+      (function-lambda-expression function)
+    (declare (ignore x y))
+    (symbol-name name))
+  #+ccl
+  (function-name function))
 
 (defun symbol->package (symbol)
   (package-name (symbol-package symbol)))
