@@ -234,12 +234,13 @@ Some numbers, string, lists and object references."))
       (assert-true (utils:circular-list-p restored))
       (assert-true (eq (elt restored 0) (elt restored 2))))))
 
-#-abcl
+
+(defparameter *nested-circular-list* '#1=(2 2 #2=(a b) (#1# #1# (#1# #2#)) 5 #2# c . #1#))
+
 (def-test-method nested-circular-list ((self typestest) :run nil)
-   (let* ((orig     '#1=(2 2 #2=(a b) (#1# #1# (#1# #2#)) 5 #2# c . #1#))
-          (restored (unmarshal (marshal orig))))
+   (let ((restored (unmarshal (marshal *nested-circular-list*))))
      (assert-true (utils:circular-list-p restored))
-     (assert-true (eq (caaddr orig)
+     (assert-true (eq (caaddr *nested-circular-list*)
          	      (caaddr restored)))
      (assert-true (eq (caaddr restored)
                       'a))))
