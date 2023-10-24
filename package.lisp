@@ -19,7 +19,6 @@
 
 (defpackage :serialization-format
   (:use :cl)
-  (:nicknames :fmt)
   (:export
    :id
    :reference-id
@@ -46,6 +45,7 @@
 (defpackage :marshal
   (:use :cl)
   (:nicknames :ms)
+  (:local-nicknames (:fmt :serialization-format))
   (:export
    :*idiom-table*
    :marshal
