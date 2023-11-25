@@ -45,7 +45,6 @@
 (defpackage :marshal
   (:use :cl)
   (:nicknames :ms)
-  (:local-nicknames (:fmt :serialization-format))
   (:export
    :*idiom-table*
    :marshal
