@@ -72,22 +72,27 @@ Actually nothing happens.
 Next we define the method `class-persistent-slots` for this class. The method has to be defined
 in the package `:marshal`.
 
+```lisp
     (defmethod ms:class-persistent-slots ((self ship))
       '(name dimensions course dinghy))
     --> #<STANDARD-METHOD MARSHAL:CLASS-PERSISTENT-SLOTS (SHIP) {1002B16B31}
+```
 
 Note that the slot `cruise` is not listed. Therefore it will not be serialized.
 
+```lisp
     $ (ms:marshal ark)
     -->  (:PCODE 1
                 (:OBJECT 1 SHIP (:SIMPLE-STRING 2 "Ark") (:LIST 3 :WIDTH 30 :LENGTH 90) 360
 	            (:LIST 4)))
+```
 
 Fine. Try a `(ms:unmarshal (ms:marshal ark))` and you will get a clone of the object ark.
 
 
 Let's define some subclasses (yes, it's Lisp, we use multiple inheritance here).
 
+```lisp
     (defclass sailingship (ship)
       ((sailarea :initform 0 :initarg :sailarea :accessor sailarea))
       )
@@ -99,9 +104,11 @@ Let's define some subclasses (yes, it's Lisp, we use multiple inheritance here).
     (defclass motorsailor (motorship sailingship)
       ()
     )
+```
 
 Some instances:
 
+```lisp
      (defparameter ship2 (make-instance 'sailingship :name "Pinta" :course 270 :cruise 9
 				   :dimensions '(:width 7 :length 21) :sailarea 400))
      (defparameter ship3 (make-instance 'motorship :name "Titanic" :course 320 :cruise 21
@@ -109,13 +116,16 @@ Some instances:
      (defparameter ship4 (make-instance 'motorsailor  :name "Krusenstern" :course 180
 				   :cruise 17.4 :dimensions '(:width 12 :length 82)
 				   :sailarea 3400 :enginepower 2000))
+```
 
 Let's try
 
+```lisp
     $ (ms:marshal ship4)
     --> (:PCODE 1
                (:OBJECT 1 MOTORSAILOR (:SIMPLE-STRING 2 "Krusenstern")
                    (:LIST 3 :WIDTH 12 :LENGTH 82) 180 (:LIST 4)))
+```
 
 Note that the slots to be marshalled are determined by the function `ms:class-peristant-slots` of
 the baseclass `ship`.
@@ -123,6 +133,7 @@ the baseclass `ship`.
 One last class and an instance. please note the backreference to
 another ship. That's a circular reference.
 
+```lisp
     (defclass dinghy (ship)
       ((aboard :initform NIL :initarg :aboard :accessor aboard)) ; another ship -> circular ref
     )
@@ -137,10 +148,12 @@ another ship. That's a circular reference.
                   (:LIST 3 :WIDTH 12 :LENGTH 82) 180
                   (:OBJECT 4 DINGHY (:SIMPLE-STRING 5 "Gig") (:LIST 6 :WIDTH 2 :LENGTH 6)
                     320 (:LIST 7))))
+```
 
 We see the reference to the dhingy (the "sub ship"), but not the
 backreference. Simply, because so far the back link `aboard` is still transient.
 
+```lisp
     (defmethod ms:class-persistent-slots ((self dinghy))
       (append (call-next-method) '(aboard)))
 
@@ -150,10 +163,25 @@ backreference. Simply, because so far the back link `aboard` is still transient.
                  (:LIST 3 :WIDTH 12 :LENGTH 82) 180
                  (:OBJECT 4 DINGHY (:SIMPLE-STRING 5 "Gig") (:LIST 6 :WIDTH 2 :LENGTH 6)
                     320 (:LIST 7) (:REFERENCE 1))))
+```
 
 Brilliant!
 References, circles et. are working regardless these are references from
 and to lists, objects, hashtables, array etc.
+
+
+### Marshalling all Class Slots Automatically
+
+If you want to just marshal all slots in your classes automatically,
+you can do so by first defining a method of `marshal:class-persistent-slots` 
+which specializes on `standard-object`. Then you can use the Meta Object
+Protocol to automatically list out all the slots that your class has.
+
+```lisp
+(defmethod marshal:class-persistent-slots ((serializable standard-object))
+  (mapcar #'closer-mop:slot-definition-name
+          (closer-mop:class-slots (class-of serializable))))
+```
 
 
 Understanding the Implementation
