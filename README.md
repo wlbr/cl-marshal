@@ -186,7 +186,7 @@ and to lists, objects, hashtables, array etc.
 ### Marshalling all Class Slots Automatically
 
 If you want to just marshal all slots in your classes automatically,
-you can do so by first defining a method of `marshal:class-persistent-slots` 
+you can do so by first defining a method of `marshal:class-persistent-slots`
 which specializes on `standard-object`. Then you can use the Meta Object
 Protocol to automatically list out all the slots that your class has.
 
@@ -236,7 +236,6 @@ compression in front of your lisp webserver. Anyway, you will find an
 alternative, shorter implementation in `coding-idiom.lisp`, it is fairly
 straight-forward.
 
-
 Installation
 ------------
 
@@ -248,15 +247,17 @@ The most simple and recommended way to install cl-marshal is by using
 will download the package and actually load it. You only need to do
 this once per machine. Later a
 
+``` lisp
     (require :marshal)
+```
 
 will be enough.
 
-
-
 Alternatively you may get the code with:
 
+``` sh
     git clone git://github.com/wlbr/cl-marshal.git
+```
 
 Either you add this to your asdf repository, then you will only need
 to do a `(require :marshal)` in your source.
@@ -272,7 +273,6 @@ Or, as a kind of worst case, you simply do a direct `(load
 <file>)` of the files `package.lisp`, `coding-idiom.lisp`, `marshal.lisp`,
 and `unmarshal.lisp`.
 
-
 Dependencies
 ---------------
 None except for asdf.
@@ -285,7 +285,6 @@ Tested with SBCL and CCL. No rocket science required, should run in
 any environment.
 
 A set of unit tests is included in tests.lisp.
-
 
 Reporting problems
 ------------------
