@@ -21,26 +21,34 @@ Usage
 For this ASDF needs to be installed and has to have access to marshal.asd.
 Otherwise do a load *.lisp/tests-.lisp.
 
+```lisp
     (require :marshal)
+```
 
 
 Serialization of simple examples:
 
+```lisp
     $ (ms:marshal (list 1 2 3 "Foo" "Bar" (make-array '(3) :initial-contents '(a b c))))
     --> (:PCODE 1
               (:LIST 1 1 2 3 (:SIMPLE-STRING 2 "Foo") (:SIMPLE-STRING 3 "Bar")
               (:ARRAY 4 (3) T (A B C))))
+```
 
 Deserialization:
 
+```lisp
     $ (ms:unmarshal '(:PCODE 1
           (:LIST 1 1 2 3 (:SIMPLE-STRING 2 "Foo") (:SIMPLE-STRING 3 "Bar")
           (:ARRAY 4 (3) T (A B C)))))
     --> (1 2 3 "Foo" "Bar" #(A B C))
+```
 
 That means that a
 
+```lisp
     (ms:unmarshal (ms:marshal myobject))
+```
 
 returns a deep clone of myobject.
 
@@ -50,6 +58,7 @@ returns a deep clone of myobject.
 ### Advanced Usage
 Definition of a class
 
+```lisp
      (defclass ship ()
        ((name :initform "" :initarg :name :accessor name)
         (dimensions :initform '(:width 0 :length 0) :initarg :dimensions :accessor dimensions)
@@ -62,10 +71,14 @@ Definition of a class
 
     (defparameter ark (make-instance 'ship :name "Ark" :course 360
                                 :dimensions '(:width 30 :length 90)))
+```
+
 Let's try to serialize this:
 
+```lisp
     $ (ms:marshal ark)
     --> (:PCODE 1 NIL)
+```
 
 Actually nothing happens.
 
