@@ -94,11 +94,14 @@
       for slot in slots
       for value in values
       do (if (listp value)
-             (setf (slot-value out slot)
-                   (unmarshal-fn version
-                                 (serialization-format:data-type value)
-                                 value
-                                 circle-hash))
+             (if (eql (serialization-format:data-type value)
+                      (coding-idiom :unbound))
+                 (slot-makunbound out slot)
+                 (setf (slot-value out slot)
+                       (unmarshal-fn version
+                                     (serialization-format:data-type value)
+                                     value
+                                     circle-hash)))
              (setf (slot-value out slot) (unmarshal-fn version t value circle-hash))))
     (initialize-unmarshalled-instance out)))
 
@@ -270,3 +273,4 @@
 ;;; =============================================================
 
 (pushnew :marshal *features*)
+ 

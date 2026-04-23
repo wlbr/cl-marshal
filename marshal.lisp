@@ -97,8 +97,7 @@ to send it over a network or to store it in a database etc.")
 
 (defmethod marshal ((object standard-object) &optional (circle-hash nil))
   (let* ((class   (class-of object))
-         (raw-slots (class-persistent-slots object))
-         (pslots (remove-if-not (lambda (slot) (slot-boundp object slot)) raw-slots))
+         (pslots (class-persistent-slots object))
          (dummy   nil)
          (outlist nil))
     (setq dummy (getvalue circle-hash object))
@@ -116,8 +115,10 @@ to send it over a network or to store it in a database etc.")
               (dolist (walker pslots)
                 (setq outlist
 		              (nconc outlist
-			                 (list (marshal (slot-value object walker)
-					                        circle-hash)))))
+                             (if (slot-boundp object walker)
+			                     (list (marshal (slot-value object walker)
+					                            circle-hash))
+                                 (list (list (coding-idiom :unbound)))))))
               (setq outlist (nconc outlist (list (marshal nil circle-hash)))))))
     outlist))
 
