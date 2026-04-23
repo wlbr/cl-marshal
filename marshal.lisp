@@ -97,7 +97,7 @@ to send it over a network or to store it in a database etc.")
 
 (defmethod marshal ((object standard-object) &optional (circle-hash nil))
   (let* ((class   (class-of object))
-         (pslots (class-persistent-slots object))
+         (pslots  (class-persistent-slots object))
          (dummy   nil)
          (outlist nil))
     (setq dummy (getvalue circle-hash object))
