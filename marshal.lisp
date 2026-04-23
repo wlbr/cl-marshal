@@ -107,17 +107,19 @@ to send it over a network or to store it in a database etc.")
           (setq dummy (genkey circle-hash))
           (setvalue circle-hash object dummy)
           (setf outlist (list (coding-idiom :object)
-			      dummy
-			      (class-name class)
-			      (intern (symbol->package (class-name class))
-				      :keyword)))
+			                  dummy
+			                  (class-name class)
+			                  (intern (symbol->package (class-name class))
+				                      :keyword)))
           (if pslots
-             (dolist (walker pslots)
-               (setq outlist
-		     (nconc outlist
-			    (list (marshal (slot-value object walker)
-					   circle-hash)))))
-             (setq outlist (nconc outlist (list (marshal nil circle-hash)))))))
+              (dolist (walker pslots)
+                (setq outlist
+		              (nconc outlist
+                             (if (slot-boundp object walker)
+			                     (list (marshal (slot-value object walker)
+					                            circle-hash))
+                                 (list (list (coding-idiom :unbound)))))))
+              (setq outlist (nconc outlist (list (marshal nil circle-hash)))))))
     outlist))
 
 (defun %walk-list (sequence output ckey key-idiom circle-hash)

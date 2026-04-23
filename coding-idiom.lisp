@@ -26,6 +26,7 @@
                               :simple-string     :simple-string
                               :function          :function
                               :reference         :reference
+                              :unbound           :unbound
                               :coding-release-no 1)
      "Definition of the vocabulary of the generated serialization. You can
 increase verbosity or compactness by choosing your own 'language'.
