@@ -27,7 +27,7 @@
    (dimensions :initform '(:width 0 :length 0) :initarg :dimensions :accessor dimensions)
    (course :initform 0 :initarg :course :accessor course)
    (cruise :initform 0 :initarg :cruise :accessor cruise) ; shall be transient
-   (dinghy :initform nil :initarg :dinghy :accessor dinghy))  ; another ship -> ref
+   (dinghy :initform nil :initarg :dinghy :accessor dinghy)) ; another ship -> ref
   (:documentation "A democlass. Some 'persistent slots', one transient.
 Some numbers, string, lists and object references."))
 
