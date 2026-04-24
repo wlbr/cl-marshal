@@ -27,7 +27,7 @@
    (dimensions :initform '(:width 0 :length 0) :initarg :dimensions :accessor dimensions)
    (course :initform 0 :initarg :course :accessor course)
    (cruise :initform 0 :initarg :cruise :accessor cruise) ; shall be transient
-   (dinghy :initform nil :initarg :dinghy :accessor dinghy)) ; another ship -> ref
+   (dinghy :initform nil :initarg :dinghy :accessor dinghy))  ; another ship -> ref
   (:documentation "A democlass. Some 'persistent slots', one transient.
 Some numbers, string, lists and object references."))
 
@@ -289,6 +289,21 @@ Some numbers, string, lists and object references."))
                                     :unserializable-slot (make-instance 'unserializable))))
        (eq (some-slot (unserializable-slot (ms:unmarshal (ms:marshal instance))))
            :default-value))))
+
+(defclass class-with-unbound-slots ()
+  ((foo :accessor foo)
+   (bar :accessor bar)
+   (bip :initform 12345)))
+
+(defmethod ms:class-persistent-slots ((class class-with-unbound-slots))
+  '(foo bar bip))
+
+(def-test-method class-with-unbound-slots ((self typestest) :run nil)
+  (let* ((test-instance (make-instance 'class-with-unbound-slots))
+	     (restored (unmarshal (marshal test-instance))))
+    (assert-false (slot-boundp restored 'foo))
+    (assert-false (slot-boundp restored 'bar))
+    (assert-true (slot-boundp restored 'bip))))
 
 (progn
   (print "Testcase Objecttest")
