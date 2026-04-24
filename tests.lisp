@@ -40,7 +40,7 @@ Some numbers, string, lists and object references."))
           (getf (dimensions self):width)))
 
 
-(defmethod ms:class-persistent-slots ((self ship))
+(defmethod class-persistent-slots ((self ship))
   '(name dimensions course dinghy))
 
 (defclass sailingship (ship)
@@ -68,7 +68,7 @@ Some numbers, string, lists and object references."))
   )
 
 ;; note: intentionally misspelled
-(defmethod ms:class-persistant-slots ((self dinghy))
+(defmethod class-persistant-slots ((self dinghy))
   (append (call-next-method) '(aboard)))
 
 
@@ -275,19 +275,19 @@ Some numbers, string, lists and object references."))
     :initarg :unserializable-slot
     :initform (make-instance 'unserializable))))
 
-(defmethod ms:class-persistent-slots ((object unserializable-wrapper))
+(defmethod class-persistent-slots ((object unserializable-wrapper))
   '(unserializable-slot))
 
 (def-test-method nil-value-slots-when-unserializable ((self typestest) :run nil)
   (assert-true
      (let ((instance (make-instance 'unserializable-wrapper
                                     :unserializable-slot (make-instance 'unserializable))))
-       (typep (unserializable-slot (ms:unmarshal (ms:marshal instance)))
+       (typep (unserializable-slot (unmarshal (marshal instance)))
               'unserializable)))
   (assert-true
      (let ((instance (make-instance 'unserializable-wrapper
                                     :unserializable-slot (make-instance 'unserializable))))
-       (eq (some-slot (unserializable-slot (ms:unmarshal (ms:marshal instance))))
+       (eq (some-slot (unserializable-slot (unmarshal (marshal instance))))
            :default-value))))
 
 (defclass class-with-unbound-slots  ()
@@ -306,7 +306,7 @@ Some numbers, string, lists and object references."))
 
 (def-test-method error-on-access-unbound ((self typestest) :run nil)
   (let* ((instance (make-instance 'class-with-unbound-slots :foo "test")) ; bar, baz unbound
-         (deserialized-instance (unmarshal (ms:marshal instance))))
+         (deserialized-instance (unmarshal (marshal instance))))
     (assert-true (string= (foo instance) "test"))
     (assert-condition 'unbound-slot (bar deserialized-instance))))
 
