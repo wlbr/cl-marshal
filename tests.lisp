@@ -290,6 +290,26 @@ Some numbers, string, lists and object references."))
        (eq (some-slot (unserializable-slot (ms:unmarshal (ms:marshal instance))))
            :default-value))))
 
+(defclass class-with-unbound-slots  ()
+  ((bar
+    :initarg :bar
+    :accessor bar)
+   (foo
+    :initarg :foo
+    :accessor foo)
+   (baz
+    :initarg :baz
+    :accessor baz)))
+
+(defmethod class-persistent-slots ((object class-with-unbound-slots))
+  '(bar foo baz))
+
+(def-test-method error-on-access-unbound ((self typestest) :run nil)
+  (let* ((instance (make-instance 'class-with-unbound-slots :foo "test")) ; bar, baz unbound
+         (deserialized-instance (unmarshal (ms:marshal instance))))
+    (assert-true (string= (foo instance) "test"))
+    (assert-condition 'unbound-slot (bar deserialized-instance))))
+
 (progn
   (print "Testcase Objecttest")
   (textui-test-run (get-suite objecttest))
